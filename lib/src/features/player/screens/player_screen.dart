@@ -59,20 +59,6 @@ class PlayerScreen extends ConsumerWidget {
             children: [
               _PlayerSurahNumber(surahNumber: displayNumber),
 
-              // DEBUG row
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'DEBUG: surahId=$displayNumber '
-                  'prev=${currentSurahNotifier.canGoPrev} '
-                  'next=${currentSurahNotifier.canGoNext}',
-                  style: const TextStyle(
-                    color: Colors.yellow,
-                    fontSize: 10,
-                  ),
-                ),
-              ),
-
               const Spacer(flex: 2),
 
               _PlayerCircle(arabicName: displayArabic),

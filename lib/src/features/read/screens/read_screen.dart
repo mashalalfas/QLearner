@@ -125,8 +125,16 @@ class _VerseCard extends StatelessWidget {
                 if (verse.audioUrl != null)
                   IconButton(
                     onPressed: () {
-                      // Navigate to player with this verse
-                      // TODO: Implement navigation to player
+                      // Load surah audio, then open player
+                      ref.read(currentSurahProvider.notifier).ensureSurahsLoaded();
+                      ref.read(currentSurahProvider.notifier).loadSurah(widget.surahId);
+                      if (context.mounted) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => PlayerScreen(surahId: widget.surahId),
+                          ),
+                        );
+                      }
                     },
                     icon: const Icon(
                       Icons.play_circle_outline,
