@@ -80,9 +80,10 @@ class PlayerScreen extends ConsumerWidget {
 
                     const SizedBox(height: 32),
 
-                    // Controls row: Prev | Play/Pause | Next
+                    // Controls row: Prev | Play/Pause/Loading | Next
                     _PlayerControls(
                       playerStateAsync: playerStateAsync,
+                      isLoading: isLoading,
                       onPrev: currentSurahNotifier.canGoPrev
                           ? () async {
                               await currentSurahNotifier.playPrevious();
@@ -140,7 +141,7 @@ class PlayerScreen extends ConsumerWidget {
                     const Spacer(flex: 3),
                   ],
                 ),
-                if (isLoading) const _LoadingOverlay(),
+                // No overlay — loading shown inside _PlayerControls via waveform
               ],
             ),
           ),
@@ -274,12 +275,14 @@ class _AnimatedGlowCircleState extends State<_AnimatedGlowCircle>
 /// onPrev / onNext are nullable — null means the button is disabled.
 class _PlayerControls extends StatelessWidget {
   final AsyncValue<PlayerState> playerStateAsync;
+  final bool isLoading;
   final VoidCallback? onPrev;
   final VoidCallback onPlay;
   final VoidCallback? onNext;
 
   const _PlayerControls({
     required this.playerStateAsync,
+    required this.isLoading,
     this.onPrev,
     required this.onPlay,
     this.onNext,
@@ -307,37 +310,37 @@ class _PlayerControls extends StatelessWidget {
 
         const SizedBox(width: 32),
 
-        // Play/Pause button (larger, gold)
-        playerStateAsync.when(
-          data: (state) {
-            return TextButton(
-              onPressed: onPlay,
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.goldStart,
-                textStyle: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
+        // Center: waveform when loading, otherwise Play/Pause
+        isLoading
+            ? const _WaveformBar(delayMs: 0, size: 22)
+            : playerStateAsync.when(
+                data: (state) => TextButton(
+                  onPressed: onPlay,
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.goldStart,
+                    textStyle: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  child: Text(state.isPlaying ? 'Pause' : 'Play'),
+                ),
+                loading: () => const Text(
+                  '▶',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.goldStart,
+                  ),
+                ),
+                error: (_, __) => TextButton(
+                  onPressed: onPlay,
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.goldMuted,
+                  ),
+                  child: const Text('Play'),
                 ),
               ),
-              child: Text(state.isPlaying ? 'Pause' : 'Play'),
-            );
-          },
-          loading: () => const Text(
-            '▶',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: AppColors.goldStart,
-            ),
-          ),
-          error: (_, __) => TextButton(
-            onPressed: onPlay,
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.goldMuted,
-            ),
-            child: const Text('Play'),
-          ),
-        ),
 
         const SizedBox(width: 32),
 
@@ -542,7 +545,8 @@ class _WaveformAnimation extends StatelessWidget {
 
 class _WaveformBar extends StatefulWidget {
   final int delayMs;
-  const _WaveformBar({required this.delayMs});
+  final double size; // logical px, scales the bar height
+  const _WaveformBar({required this.delayMs, this.size = 32});
 
   @override
   State<_WaveformBar> createState() => _WaveformBarState();
@@ -578,8 +582,8 @@ class _WaveformBarState extends State<_WaveformBar>
       builder: (_, __) {
         final h = 8.0 + 24.0 * delayed.value;
         return Container(
-          width: 5,
-          height: h,
+          width: widget.size * 0.22,
+          height: widget.size * 0.75 * (0.33 + 0.67 * delayed.value),
           decoration: BoxDecoration(
             color: AppColors.goldStart,
             borderRadius: BorderRadius.circular(3),
