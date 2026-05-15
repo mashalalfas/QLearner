@@ -71,6 +71,7 @@ class PlayerState {
 
 enum PlayerStateEnum {
   playing,
+  buffering,
   paused,
   stopped,
   completed,

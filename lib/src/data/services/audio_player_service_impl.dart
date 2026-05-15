@@ -94,7 +94,7 @@ class AudioPlayerServiceImpl extends AudioPlayerService {
         } else if (ps == asvc.AudioProcessingState.idle) {
           s = PlayerStateEnum.stopped;
         } else if (ps == asvc.AudioProcessingState.loading || ps == asvc.AudioProcessingState.buffering) {
-          s = PlayerStateEnum.paused;
+          s = PlayerStateEnum.buffering;
         } else {
           s = PlayerStateEnum.stopped;
         }

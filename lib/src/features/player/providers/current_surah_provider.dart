@@ -31,6 +31,12 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
         if (state.state == PlayerStateEnum.completed && canGoNext) {
           playNext();
         }
+        // Clear _isLoading as soon as audio starts playing.
+        // This fires for every transition to PlayerStateEnum.playing — including
+        // when a surah first starts streaming after prev/next navigation.
+        if (state.state == PlayerStateEnum.playing && _isLoading) {
+          _setLoading(false);
+        }
       },
     );
   }
@@ -93,16 +99,21 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
   Future<Surah?> playNext() async {
     await ensureSurahsLoaded();
     final idx = _currentIndex;
-    if (idx < 0 || idx >= _allSurahs.length - 1) return null; // at last surah or none
+    if (idx < 0 || idx >= _allSurahs.length - 1) return null;
 
     final nextSurah = _allSurahs[idx + 1];
     _setLoading(true);
     try {
       await loadSurah(nextSurah.surahId);
       return nextSurah;
-    } finally {
+    } catch (_) {
       _setLoading(false);
+      rethrow;
     }
+    // NOTE: _setLoading(false) is NOT in finally.
+    // It is driven by PlayerStateEnum.playing from the playerStateStream listener
+    // in the AudioPlayerService — this ensures the waveform stays visible
+    // for the entire buffering phase and clears only when audio actually starts.
   }
 
   /// Play the previous surah if possible (surahId > 1).
@@ -110,16 +121,18 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
   Future<Surah?> playPrevious() async {
     await ensureSurahsLoaded();
     final idx = _currentIndex;
-    if (idx <= 0) return null; // at first surah or none
+    if (idx <= 0) return null;
 
     final prevSurah = _allSurahs[idx - 1];
     _setLoading(true);
     try {
       await loadSurah(prevSurah.surahId);
       return prevSurah;
-    } finally {
+    } catch (_) {
       _setLoading(false);
+      rethrow;
     }
+    // Same note: _setLoading(false) driven by PlayerStateEnum.playing from stream.
   }
 
   /// Whether prev navigation is allowed (not at surah 1 and a surah is selected).

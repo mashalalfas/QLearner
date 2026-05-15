@@ -310,21 +310,24 @@ class _PlayerControls extends StatelessWidget {
 
         const SizedBox(width: 32),
 
-        // Center: waveform when loading, otherwise Play/Pause
-        isLoading
-            ? const _WaveformBar(delayMs: 0, size: 22)
-            : playerStateAsync.when(
-                data: (state) => TextButton(
-                  onPressed: onPlay,
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.goldStart,
-                    textStyle: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  child: Text(state.isPlaying ? 'Pause' : 'Play'),
+        // Center: waveform when audio is buffering/loading, otherwise Play/Pause
+        playerStateAsync.when(
+          data: (state) {
+            if (state.state == PlayerStateEnum.buffering) {
+              return const _WaveformBar(delayMs: 0, size: 22);
+            }
+            return TextButton(
+              onPressed: onPlay,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.goldStart,
+                textStyle: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
                 ),
+              ),
+              child: Text(state.isPlaying ? 'Pause' : 'Play'),
+            );
+          },
                 loading: () => const Text(
                   '▶',
                   style: TextStyle(
