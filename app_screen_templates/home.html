@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quran Learner - Home</title>
+    <style>
+        /* Material Design 3 - Cotton Cloud Palette */
+        :root {
+            --md-sys-color-primary: #7C6FAF;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #E8E0FF;
+            --md-sys-color-on-primary-container: #1E1B2E;
+            --md-sys-color-secondary: #7C6FAF;
+            --md-sys-color-on-secondary: #FFFFFF;
+            --md-sys-color-secondary-container: #E8E0FF;
+            --md-sys-color-on-secondary-container: #1E1B2E;
+            --md-sys-color-tertiary: #6B5BA8;
+            --md-sys-color-on-tertiary: #FFFFFF;
+            --md-sys-color-tertiary-container: #F0E5FF;
+            --md-sys-color-on-tertiary-container: #1E1B2E;
+            --md-sys-color-background: #FFFDF5;
+            --md-sys-color-on-background: #1C1B1F;
+            --md-sys-color-surface: #FFFDF5;
+            --md-sys-color-on-surface: #1C1B1F;
+            --md-sys-color-surface-variant: #E6E6FA;
+            --md-sys-color-on-surface-variant: #47434F;
+            --md-sys-color-outline: #79747E;
+            --md-sys-color-surface-dim: #F5F4EF;
+            --md-sys-color-surface-bright: #FFFFFF;
+            --header-color: #E6E6FA;
+            --accent-color: #7C6FAF;
+            --shadow-color: rgba(124, 111, 175, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* App Container */
+        .app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: var(--md-sys-color-surface);
+        }
+
+        /* App Bar */
+        .app-bar {
+            background-color: var(--header-color);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        .app-bar-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            flex: 1;
+        }
+
+        .search-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-field {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            border: none;
+            border-radius: 28px;
+            background-color: var(--md-sys-color-surface);
+            font-size: 16px;
+            outline: none;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .search-field:focus {
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--md-sys-color-outline);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 16px;
+            padding-bottom: 80px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Surah Grid */
+        .surah-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .surah-card {
+            background-color: var(--md-sys-color-surface-variant);
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 120px;
+        }
+
+        .surah-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow-color);
+            background-color: var(--header-color);
+        }
+
+        .surah-card:active {
+            transform: scale(0.98);
+        }
+
+        .surah-number {
+            font-size: 12px;
+            color: var(--accent-color);
+            font-weight: 500;
+            align-self: flex-start;
+        }
+
+        .surah-name-arabic {
+            font-size: 22px;
+            font-weight: 500;
+            text-align: center;
+            color: var(--md-sys-color-primary);
+            line-height: 1.2;
+        }
+
+        .surah-name-english {
+            font-size: 13px;
+            color: var(--md-sys-color-on-surface-variant);
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .surah-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 8px;
+        }
+
+        .verse-count {
+            font-size: 12px;
+            color: var(--md-sys-color-outline);
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--md-sys-color-primary-container);
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 18px;
+        }
+
+        .icon-btn:hover {
+            background-color: var(--accent-color);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--md-sys-color-surface);
+            border-top: 1px solid var(--md-sys-color-surface-variant);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 12px;
+            box-shadow: 0 -2px 8px var(--shadow-color);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            color: var(--md-sys-color-on-surface-variant);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-radius: 16px;
+            min-width: 64px;
+        }
+
+        .nav-item.active {
+            color: var(--accent-color);
+        }
+
+        .nav-item:hover {
+            background-color: var(--md-sys-color-surface-variant);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Player Bar (Mini Player) */
+        .player-bar {
+            position: fixed;
+            bottom: 72px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--md-sys-color-secondary-container);
+            border-radius: 16px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            z-index: 99;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .player-bar:hover {
+            transform: translateX(-50%) translateY(-2px);
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-secondary-container);
+        }
+
+        .player-subtitle {
+            font-size: 12px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .player-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .player-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--accent-color);
+            color: var(--md-sys-color-on-primary);
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /* Page Views */
+        .page {
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Surah Detail Page */
+        .surah-detail {
+            padding: 16px;
+        }
+
+        .surah-header {
+            background-color: var(--header-color);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .surah-header-arabic {
+            font-size: 36px;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+        }
+
+        .surah-header-name {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            margin-bottom: 4px;
+        }
+
+        .surah-header-meta {
+            font-size: 14px;
+            color: var(--md-sys-color-outline);
+        }
+
+        .verse-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .verse-card {
+            background-color: var(--md-sys-color-surface-variant);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .verse-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .verse-number {
+            font-size: 12px;
+            color: var(--accent-color);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .verse-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        /* Library Page */
+        .library-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .bookmark-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bookmark-item {
+            background-color: var(--md-sys-color-surface-variant);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .bookmark-item:hover {
+            background-color: var(--header-color);
+            transform: translateX(4px);
+        }
+
+        .bookmark-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: var(--md-sys-color-on-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .bookmark-info {
+            flex: 1;
+        }
+
+        .bookmark-surah {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .bookmark-verse {
+            font-size: 12px;
+            color: var(--md-sys-color-outline);
+        }
+
+        /* Settings Page */
+        .settings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .settings-item {
+            background-color: var(--md-sys-color-surface-variant);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .settings-item:hover {
+            background-color: var(--header-color);
+        }
+
+        .settings-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .settings-value {
+            font-size: 14px;
+            color: var(--md-sys-color-outline);
+        }
+
+        /* Responsive */
+        @media (max-width: 360px) {
+            .surah-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .surah-card {
+                min-height: 100px;
+                padding: 12px;
+            }
+            .surah-name-arabic {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- App Bar -->
+        <header class="app-bar">
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-field" id="searchInput" placeholder="Search surah...">
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Home Page -->
+            <div id="home" class="page active">
+                <div class="surah-grid" id="surahGrid">
+                    <!-- Surah cards will be injected by JS -->
+                </div>
+            </div>
+
+            <!-- Surah Detail Page -->
+            <div id="surahDetail" class="page">
+                <div class="surah-detail">
+                    <div class="surah-header">
+                        <div class="surah-header-arabic" id="detailArabic"></div>
+                        <div class="surah-header-name" id="detailName"></div>
+                        <div class="surah-header-meta" id="detailMeta"></div>
+                    </div>
+                    <div class="verse-list" id="verseList">
+                        <!-- Sample verses will be shown -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Page -->
+            <div id="player" class="page">
+                <div class="surah-detail">
+                    <div class="surah-header">
+                        <div class="surah-header-arabic">الْفَاتِحَة</div>
+                        <div class="surah-header-name">Al-Fatiha (The Opening)</div>
+                        <div class="surah-header-meta">Reciter: Mishary Rashid Alafasy</div>
+                    </div>
+                    <div style="text-align: center; padding: 24px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">▶️</div>
+                        <p style="color: var(--md-sys-color-outline);">Press play to start listening</p>
+                        <div style="display: flex; justify-content: center; gap: 16px; margin-top: 24px;">
+                            <button class="icon-btn" style="width: 56px; height: 56px; font-size: 24px;">⏮️</button>
+                            <button class="player-btn" style="width: 64px; height: 64px; font-size: 28px;">▶️</button>
+                            <button class="icon-btn" style="width: 56px; height: 56px; font-size: 24px;">⏭️</button>
+                        </div>
+                        <div style="margin-top: 24px; padding: 0 16px;">
+                            <div style="background: var(--md-sys-color-surface-variant); height: 4px; border-radius: 2px; position: relative;">
+                                <div style="background: var(--accent-color); width: 35%; height: 100%; border-radius: 2px;"></div>
+                                <div style="position: absolute; left: 35%; top: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; background: var(--accent-color); border-radius: 50%;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--md-sys-color-outline);">
+                                <span>1:24</span>
+                                <span>4:12</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Library Page -->
+            <div id="library" class="page">
+                <div class="library-section">
+                    <h2 class="section-title">Recent</h2>
+                    <div class="bookmark-list">
+                        <div class="bookmark-item">
+                            <div class="bookmark-number">1</div>
+                            <div class="bookmark-info">
+                                <div class="bookmark-surah">Al-Fatiha</div>
+                                <div class="bookmark-verse">Verse 1-7</div>
+                            </div>
+                        </div>
+                        <div class="bookmark-item">
+                            <div class="bookmark-number">2</div>
+                            <div class="bookmark-info">
+                                <div class="bookmark-surah">Al-Baqarah</div>
+                                <div class="bookmark-verse">Verse 255 (Ayat al-Kursi)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="library-section">
+                    <h2 class="section-title">Bookmarks</h2>
+                    <div class="bookmark-list">
+                        <div class="bookmark-item">
+                            <div class="bookmark-number">36</div>
+                            <div class="bookmark-info">
+                                <div class="bookmark-surah">Ya-Sin</div>
+                                <div class="bookmark-verse">Verse 58</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settings" class="page">
+                <div class="settings-list">
+                    <div class="settings-item">
+                        <span class="settings-label">Theme</span>
+                        <span class="settings-value">Light</span>
+                    </div>
+                    <div class="settings-item">
+                        <span class="settings-label">Reciter</span>
+                        <span class="settings-value">Mishary Alafasy</span>
+                    </div>
+                    <div class="settings-item">
+                        <span class="settings-label">Repeat Mode</span>
+                        <span class="settings-value">Off</span>
+                    </div>
+                    <div class="settings-item">
+                        <span class="settings-label">Playback Speed</span>
+                        <span class="settings-value">1.0x</span>
+                    </div>
+                    <div class="settings-item">
+                        <span class="settings-label">About</span>
+                        <span class="settings-value">v1.0.0</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Mini Player Bar (shown on all pages except player) -->
+        <div class="player-bar" id="playerBar">
+            <div style="font-size: 24px;">🔊</div>
+            <div class="player-info">
+                <div class="player-title">Al-Fatiha</div>
+                <div class="player-subtitle">Mishary Alafasy</div>
+            </div>
+            <div class="player-controls">
+                <button class="player-btn" style="width: 36px; height: 36px; font-size: 16px;">⏸️</button>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="#home" class="nav-item active" data-page="home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Home</span>
+            </a>
+            <a href="#library" class="nav-item" data-page="library">
+                <span class="nav-icon">📚</span>
+                <span class="nav-label">Library</span>
+            </a>
+            <a href="#player" class="nav-item" data-page="player">
+                <span class="nav-icon">🎵</span>
+                <span class="nav-label">Player</span>
+            </a>
+            <a href="#settings" class="nav-item" data-page="settings">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Settings</span>
+            </a>
+        </nav>
+    </div>
+
+    <script>
+        // Real Surah Data (114 Surahs)
+        const surahs = [
+            { id: 1, name: "Al-Fatiha", english: "The Opening", verses: 7 },
+            { id: 2, name: "Al-Baqarah", english: "The Cow", verses: 286 },
+            { id: 3, name: "Aali Imran", english: "Family of Imran", verses: 200 },
+            { id: 4, name: "An-Nisa", english: "The Women", verses: 176 },
+            { id: 5, name: "Al-Ma'idah", english: "The Table Spread", verses: 120 },
+            { id: 6, name: "Al-An'am", english: "The Cattle", verses: 165 },
+            { id: 7, name: "Al-A'raf", english: "The Heights", verses: 206 },
+            { id: 8, name: "Al-Anfal", english: "The Spoils of War", verses: 75 },
+            { id: 9, name: "At-Tawbah", english: "The Repentance", verses: 129 },
+            { id: 10, name: "Yunus", english: "Jonah", verses: 109 },
+            { id: 11, name: "Hud", english: "Hud", verses: 123 },
+            { id: 12, name: "Yusuf", english: "Joseph", verses: 111 },
+            { id: 13, name: "Ar-Ra'd", english: "The Thunder", verses: 43 },
+            { id: 14, name: "Ibrahim", english: "Abraham", verses: 52 },
+            { id: 15, name: "Al-Hijr", english: "The Rocky Tract", verses: 99 },
+            { id: 16, name: "An-Nahl", english: "The Bee", verses: 128 },
+            { id: 17, name: "Al-Isra", english: "The Night Journey", verses: 111 },
+            { id: 18, name: "Al-Kahf", english: "The Cave", verses: 110 },
+            { id: 19, name: "Maryam", english: "Mary", verses: 98 },
+            { id: 20, name: "Taha", english: "Ta-Ha", verses: 135 },
+            { id: 21, name: "Al-Anbiya", english: "The Prophets", verses: 112 },
+            { id: 22, name: "Al-Hajj", english: "The Pilgrimage", verses: 78 },
+            { id: 23, name: "Al-Mu'minun", english: "The Believers", verses: 118 },
+            { id: 24, name: "An-Nur", english: "The Light", verses: 64 },
+            { id: 25, name: "Al-Furqan", english: "The Criterion", verses: 77 },
+            { id: 26, name: "Ash-Shu'ara", english: "The Poets", verses: 227 },
+            { id: 27, name: "An-Naml", english: "The Ant", verses: 93 },
+            { id: 28, name: "Al-Qasas", english: "The Stories", verses: 88 },
+            { id: 29, name: "Al-Ankabut", english: "The Spider", verses: 69 },
+            { id: 30, name: "Ar-Rum", english: "The Romans", verses: 60 },
+            { id: 31, name: "Luqman", english: "Luqman", verses: 34 },
+            { id: 32, name: "As-Sajdah", english: "The Prostration", verses: 30 },
+            { id: 33, name: "Al-Ahzab", english: "The Combined Forces", verses: 73 },
+            { id: 34, name: "Saba", english: "Sheba", verses: 54 },
+            { id: 35, name: "Fatir", english: "The Originator", verses: 45 },
+            { id: 36, name: "Ya-Sin", english: "Ya Sin", verses: 83 },
+            { id: 37, name: "As-Saffat", english: "Those Who Set The Ranks", verses: 182 },
+            { id: 38, name: "Sad", english: "The Letter Sad", verses: 88 },
+            { id: 39, name: "Az-Zumar", english: "The Troops", verses: 75 },
+            { id: 40, name: "Ghafir", english: "The Forgiver", verses: 85 },
+            { id: 41, name: "Fussilat", english: "Explained In Detail", verses: 54 },
+            { id: 42, name: "Ash-Shura", english: "The Consultation", verses: 53 },
+            { id: 43, name: "Az-Zukhruf", english: "The Ornaments of Gold", verses: 89 },
+            { id: 44, name: "Ad-Dukhan", english: "The Smoke", verses: 59 },
+            { id: 45, name: "Al-Jathiyah", english: "The Crouching", verses: 37 },
+            { id: 46, name: "Al-Ahqaf", english: "The Wind-Curved Sandhills", verses: 35 },
+            { id: 47, name: "Muhammad", english: "Muhammad", verses: 38 },
+            { id: 48, name: "Al-Fath", english: "The Victory", verses: 29 },
+            { id: 49, name: "Al-Hujurat", english: "The Rooms", verses: 18 },
+            { id: 50, name: "Qaf", english: "The Letter Qaf", verses: 45 },
+            { id: 51, name: "Adh-Dhariyat", english: "The Winnowing Winds", verses: 60 },
+            { id: 52, name: "At-Tur", english: "The Mount", verses: 49 },
+            { id: 53, name: "An-Najm", english: "The Star", verses: 62 },
+            { id: 54, name: "Al-Qamar", english: "The Moon", verses: 55 },
+            { id: 55, name: "Ar-Rahman", english: "The Beneficent", verses: 78 },
+            { id: 56, name: "Al-Waqi'ah", english: "The Inevitable", verses: 96 },
+            { id: 57, name: "Al-Hadid", english: "The Iron", verses: 29 },
+            { id: 58, name: "Al-Mujadila", english: "The Pleading Woman", verses: 22 },
+            { id: 59, name: "Al-Hashr", english: "The Exile", verses: 24 },
+            { id: 60, name: "Al-Mumtahanah", english: "She That Is To Be Examined", verses: 13 },
+            { id: 61, name: "As-Saff", english: "The Ranks", verses: 14 },
+            { id: 62, name: "Al-Jumu'ah", english: "The Congregation", verses: 11 },
+            { id: 63, name: "Al-Munafiqun", english: "The Hypocrites", verses: 11 },
+            { id: 64, name: "At-Taghabun", english: "The Mutual Disillusion", verses: 18 },
+            { id: 65, name: "At-Talaq", english: "The Divorce", verses: 12 },
+            { id: 66, name: "At-Tahrim", english: "The Prohibition", verses: 12 },
+            { id: 67, name: "Al-Mulk", english: "The Sovereignty", verses: 30 },
+            { id: 68, name: "Al-Qalam", english: "The Pen", verses: 52 },
+            { id: 69, name: "Al-Haqqah", english: "The Reality", verses: 52 },
+            { id: 70, name: "Al-Ma'arij", english: "The Ascending Stairways", verses: 44 },
+            { id: 71, name: "Nuh", english: "Noah", verses: 28 },
+            { id: 72, name: "Al-Jinn", english: "The Jinn", verses: 28 },
+            { id: 73, name: "Al-Muzzammil", english: "The Enshrouded One", verses: 20 },
+            { id: 74, name: "Al-Muddaththir", english: "The Cloaked One", verses: 56 },
+            { id: 75, name: "Al-Qiyamah", english: "The Resurrection", verses: 40 },
+            { id: 76, name: "Al-Insan", english: "The Man", verses: 31 },
+            { id: 77, name: "Al-Mursalat", english: "The Emissaries", verses: 50 },
+            { id: 78, name: "An-Naba", english: "The Tidings", verses: 40 },
+            { id: 79, name: "An-Nazi'at", english: "Those Who Drag Forth", verses: 46 },
+            { id: 80, name: "Abasa", english: "He Frowned", verses: 42 },
+            { id: 81, name: "At-Takwir", english: "The Overthrowing", verses: 29 },
+            { id: 82, name: "Al-Infitar", english: "The Cleaving", verses: 19 },
+            { id: 83, name: "Al-Mutaffifin", english: "The Defrauding", verses: 36 },
+            { id: 84, name: "Al-Inshiqaq", english: "The Splitting Open", verses: 25 },
+            { id: 85, name: "Al-Buruj", english: "The Mansions of the Stars", verses: 22 },
+            { id: 86, name: "At-Tariq", english: "The Morning Star", verses: 17 },
+            { id: 87, name: "Al-A'la", english: "The Most High", verses: 19 },
+            { id: 88, name: "Al-Ghashiyah", english: "The Overwhelming", verses: 26 },
+            { id: 89, name: "Al-Fajr", english: "The Dawn", verses: 30 },
+            { id: 90, name: "Al-Balad", english: "The City", verses: 20 },
+            { id: 91, name: "Ash-Shams", english: "The Sun", verses: 15 },
+            { id: 92, name: "Al-Layl", english: "The Night", verses: 21 },
+            { id: 93, name: "Ad-Duhaa", english: "The Morning Brightness", verses: 11 },
+            { id: 94, name: "Ash-Sharh", english: "The Relief", verses: 8 },
+            { id: 95, name: "At-Tin", english: "The Fig", verses: 8 },
+            { id: 96, name: "Al-Alaq", english: "The Clot", verses: 19 },
+            { id: 97, name: "Al-Qadr", english: "The Power", verses: 5 },
+            { id: 98, name: "Al-Bayyinah", english: "The Clear Proof", verses: 8 },
+            { id: 99, name: "Az-Zalzalah", english: "The Earthquake", verses: 8 },
+            { id: 100, name: "Al-Adiyat", english: "The Courser", verses: 11 },
+            { id: 101, name: "Al-Qari'ah", english: "The Calamity", verses: 11 },
+            { id: 102, name: "At-Takathur", english: "The Rivalry in World Increase", verses: 8 },
+            { id: 103, name: "Al-Asr", english: "The Declining Day", verses: 3 },
+            { id: 104, name: "Al-Humazah", english: "The Traducer", verses: 9 },
+            { id: 105, name: "Al-Fil", english: "The Elephant", verses: 5 },
+            { id: 106, name: "Quraysh", english: "Quraysh", verses: 4 },
+            { id: 107, name: "Al-Ma'un", english: "The Small Kindnesses", verses: 7 },
+            { id: 108, name: "Al-Kawthar", english: "The Abundance", verses: 3 },
+            { id: 109, name: "Al-Kafirun", english: "The Disbelievers", verses: 6 },
+            { id: 110, name: "An-Nasr", english: "The Help", verses: 3 },
+            { id: 111, name: "Al-Masad", english: "The Palm Fiber", verses: 5 },
+            { id: 112, name: "Al-Ikhlas", english: "The Sincerity", verses: 4 },
+            { id: 113, name: "Al-Falaq", english: "The Daybreak", verses: 5 },
+            { id: 114, name: "An-Nas", english: "Mankind", verses: 6 }
+        ];
+
+        // DOM Elements
+        const surahGrid = document.getElementById('surahGrid');
+        const searchInput = document.getElementById('searchInput');
+        const pages = document.querySelectorAll('.page');
+        const navItems = document.querySelectorAll('.nav-item');
+        const playerBar = document.getElementById('playerBar');
+
+        // Render Surah Grid
+        function renderSurahs(surahList) {
+            surahGrid.innerHTML = '';
+            surahList.forEach(surah => {
+                const card = document.createElement('div');
+                card.className = 'surah-card';
+                card.innerHTML = `
+                    <div class="surah-number">#${surah.id}</div>
+                    <div class="surah-name-arabic">${surah.name}</div>
+                    <div class="surah-name-english">${surah.english}</div>
+                    <div class="surah-meta">
+                        <span class="verse-count">${surah.verses} verses</span>
+                        <div class="card-actions">
+                            <button class="icon-btn bookmark-btn" data-id="${surah.id}" title="Bookmark">🔖</button>
+                            <button class="icon-btn play-btn" data-id="${surah.id}" title="Play">▶️</button>
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', (e) => {
+                    if (!e.target.closest('.icon-btn')) {
+                        showSurahDetail(surah);
+                    }
+                });
+                surahGrid.appendChild(card);
+            });
+            attachCardListeners();
+        }
+
+        // Attach listeners to card buttons
+        function attachCardListeners() {
+            document.querySelectorAll('.bookmark-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.id);
+                    toggleBookmark(id);
+                    btn.textContent = btn.textContent === '🔖' ? '⭐' : '🔖';
+                });
+            });
+
+            document.querySelectorAll('.play-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.id);
+                    playSurah(id);
+                });
+            });
+        }
+
+        // Show Surah Detail Page
+        function showSurahDetail(surah) {
+            document.getElementById('detailArabic').textContent = surah.name;
+            document.getElementById('detailName').textContent = surah.english;
+            document.getElementById('detailMeta').textContent = `${surah.verses} verses • Meccan`;
+
+            // Generate sample verses (in real app, these would be actual Quran text)
+            const verseList = document.getElementById('verseList');
+            verseList.innerHTML = '';
+            for (let i = 1; i <= Math.min(surah.verses, 5); i++) {
+                const verse = document.createElement('div');
+                verse.className = 'verse-card';
+                verse.innerHTML = `
+                    <div class="verse-number">Verse ${i}</div>
+                    <div class="verse-text">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+                `;
+                verseList.appendChild(verse);
+            }
+
+            navigateTo('surahDetail');
+        }
+
+        // Hash Routing
+        function navigateTo(pageId) {
+            // Update hash
+            if (pageId === 'home') {
+                window.location.hash = '#home';
+            } else if (pageId === 'surahDetail') {
+                window.location.hash = '#surahDetail';
+            } else if (pageId.startsWith('surah/')) {
+                window.location.hash = `#${pageId}`;
+            } else {
+                window.location.hash = `#${pageId}`;
+            }
+
+            // Show page
+            pages.forEach(page => page.classList.remove('active'));
+            let targetPage = pageId;
+            if (pageId.startsWith('surah/')) {
+                const surahId = parseInt(pageId.split('/')[1]);
+                const surah = surahs.find(s => s.id === surahId);
+                if (surah) showSurahDetail(surah);
+                return;
+            }
+            document.getElementById(pageId).classList.add('active');
+
+            // Update nav active state
+            navItems.forEach(item => {
+                if (item.dataset.page === pageId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // Show/hide player bar
+            if (pageId === 'player') {
+                playerBar.style.display = 'none';
+            } else {
+                playerBar.style.display = 'flex';
+            }
+        }
+
+        // Handle hash change
+        function handleHashChange() {
+            const hash = window.location.hash.slice(1) || 'home';
+            if (hash === 'home' || hash === 'library' || hash === 'player' || hash === 'settings') {
+                navigateTo(hash);
+            } else if (hash.startsWith('surah/')) {
+                navigateTo(hash);
+            } else {
+                navigateTo('home');
+            }
+        }
+
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (query === '') {
+                renderSurahs(surahs);
+            } else {
+                const filtered = surahs.filter(s =>
+                    s.name.toLowerCase().includes(query) ||
+                    s.english.toLowerCase().includes(query) ||
+                    s.id.toString().includes(query)
+                );
+                renderSurahs(filtered);
+            }
+        });
+
+        // Navigation clicks
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = item.dataset.page;
+                navigateTo(page);
+            });
+        });
+
+        // Mini player bar click
+        playerBar.addEventListener('click', () => {
+            navigateTo('player');
+        });
+
+        // Placeholder functions
+        function toggleBookmark(surahId) {
+            console.log('Bookmark toggled for surah:', surahId);
+        }
+
+        function playSurah(surahId) {
+            console.log('Playing surah:', surahId);
+            navigateTo('player');
+        }
+
+        // Initialize
+        function init() {
+            renderSurahs(surahs);
+            handleHashChange();
+        }
+
+        // Listen for hash changes
+        window.addEventListener('hashchange', handleHashChange);
+
+        // Start app
+        init();
+    </script>
+</body>
+</html>

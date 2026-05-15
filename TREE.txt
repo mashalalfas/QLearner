@@ -1,0 +1,65 @@
+qlearner/
+├── .gitignore
+├── analysis_options.yaml
+├── pubspec.yaml
+├── README.md
+└── lib/
+    ├── main.dart
+    └── src/
+        ├── core/
+        │   ├── core.dart
+        │   ├── services/
+        │   │   ├── audio_player_service.dart
+        │   │   ├── bookmark_service.dart
+        │   │   ├── download_service.dart
+        │   │   ├── quran_repository.dart
+        │   │   └── services.dart
+        │   └── theme/
+        │       └── app_theme.dart
+        ├── data/
+        │   ├── data.dart
+        │   ├── database/
+        │   │   └── local_database_helper.dart
+        │   ├── models/
+        │   │   ├── bookmark.dart
+        │   │   ├── models.dart
+        │   │   ├── surah.dart
+        │   │   └── verse.dart
+        │   ├── repositories/
+        │   │   ├── bookmark_service_impl.dart
+        │   │   └── quran_repository_impl.dart
+        │   └── services/
+        │       ├── audio_player_service_impl.dart
+        │       └── download_service_impl.dart
+        ├── features/
+        │   ├── features.dart
+        │   ├── home/
+        │   │   ├── home.dart
+        │   │   ├── providers/
+        │   │   │   ├── home_providers.dart
+        │   │   │   └── home_state.dart
+        │   │   └── screens/
+        │   │       └── home_screen.dart
+        │   ├── library/
+        │   │   ├── library.dart
+        │   │   ├── providers/
+        │   │   │   └── library_providers.dart
+        │   │   └── screens/
+        │   │       └── library_screen.dart
+        │   ├── player/
+        │   │   ├── player.dart
+        │   │   ├── providers/
+        │   │   │   └── player_providers.dart
+        │   │   └── screens/
+        │   │       └── player_screen.dart
+        │   └── read/
+        │       ├── read.dart
+        │       ├── providers/
+        │       │   └── read_providers.dart
+        │       └── screens/
+        │           └── read_screen.dart
+        ├── presentation/
+        │   ├── presentation.dart
+        │   └── app.dart
+        └── widgets/ (placeholder for shared widgets)
+            └── (to be implemented)

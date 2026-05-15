@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quran Stream - Experience the Divine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Serif:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg-primary: #1c1410;
+            --color-bg-secondary: #2a1d16;
+            --color-accent-amber: #f4d03f;
+            --color-accent-sand: #e5b87e;
+            --color-accent-gold: #c9a227;
+            --color-text-primary: #f5e6d3;
+            --color-text-secondary: #d4c4b0;
+            --color-text-muted: #a89070;
+            --color-wine: #4a0e0e;
+            --font-quran: 'Amiri', serif;
+            --font-serif: 'Noto Serif', serif;
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            --spacing-2xl: 4rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-serif);
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Textured background with subtle noise pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"),
+                linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Papyrus texture overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 3h1v1H1V3zm2-2h1v1H3V1z' fill='%23f4d03f' fill-opacity='0.02'/%3E%3C/svg%3E");
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Skip link for accessibility */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--color-accent-amber);
+            color: var(--color-bg-primary);
+            padding: 8px;
+            z-index: 1000;
+            transition: top 0.3s;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-sm);
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(28, 20, 16, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid rgba(244, 208, 63, 0.2);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-sm);
+        }
+
+        .logo {
+            font-family: var(--font-quran);
+            font-size: 1.5rem;
+            color: var(--color-accent-amber);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            fill: var(--color-accent-amber);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--spacing-lg);
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:hover,
+        .nav-links a:focus {
+            color: var(--color-accent-amber);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--color-accent-amber);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a:focus::after {
+            width: 100%;
+        }
+
+        .nav-cta {
+            background: linear-gradient(135deg, var(--color-accent-amber), var(--color-accent-sand));
+            color: var(--color-bg-primary);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .nav-cta:hover,
+        .nav-cta:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 208, 63, 0.3);
+        }
+
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: var(--spacing-xs);
+        }
+
+        .mobile-menu-btn span {
+            display: block;
+            width: 25px;
+            height: 2px;
+            background: var(--color-accent-amber);
+            margin: 5px 0;
+            transition: 0.3s;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: var(--spacing-2xl) var(--spacing-sm);
+            text-align: center;
+        }
+
+        /* Animated sand dunes */
+        .dunes {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .dune {
+            position: absolute;
+            bottom: 0;
+            border-radius: 50% 50% 0 0;
+            background: linear-gradient(180deg, var(--color-bg-secondary) 0%, transparent 100%);
+            animation: duneShift 20s ease-in-out infinite;
+        }
+
+        .dune-1 {
+            left: -10%;
+            width: 80%;
+            height: 250px;
+            animation-delay: 0s;
+            opacity: 0.6;
+        }
+
+        .dune-2 {
+            left: 20%;
+            width: 70%;
+            height: 200px;
+            animation-delay: -5s;
+            opacity: 0.4;
+        }
+
+        .dune-3 {
+            left: -5%;
+            width: 60%;
+            height: 180px;
+            animation-delay: -10s;
+            opacity: 0.3;
+        }
+
+        @keyframes duneShift {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(30px); }
+        }
+
+        /* Floating sand particles */
+        .sand-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--color-accent-sand);
+            border-radius: 50%;
+            opacity: 0;
+            animation: floatParticle 15s infinite;
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 2s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 4s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 1s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 3s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 5s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 2.5s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 1.5s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 3.5s; }
+
+        @keyframes floatParticle {
+            0% {
+                bottom: -50px;
+                opacity: 0;
+                transform: translateX(0);
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                bottom: 100vh;
+                opacity: 0;
+                transform: translateX(100px);
+            }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
+        }
+
+        .hero h1 {
+            font-family: var(--font-quran);
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            margin-bottom: var(--spacing-md);
+            background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent-amber) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .hero .subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-lg);
+            font-weight: 400;
+        }
+
+        .arabic-verse {
+            font-family: var(--font-quran);
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            color: var(--color-accent-sand);
+            margin: var(--spacing-lg) 0;
+            line-height: 1.8;
+            direction: rtl;
+            text-align: center;
+        }
+
+        .verse-translation {
+            font-style: italic;
+            color: var(--color-text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .hero-cta {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--color-accent-amber), var(--color-accent-gold));
+            color: var(--color-bg-primary);
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(244, 208, 63, 0.3);
+        }
+
+        .hero-cta:hover,
+        .hero-cta:focus {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(244, 208, 63, 0.5);
+        }
+
+        /* Features Section */
+        .features {
+            padding: var(--spacing-2xl) 0;
+            background: var(--color-bg-secondary);
+            position: relative;
+        }
+
+        .features::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--color-accent-amber), transparent);
+        }
+
+        .section-title {
+            font-family: var(--font-quran);
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+            color: var(--color-accent-amber);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .feature-card {
+            background: rgba(74, 14, 14, 0.2);
+            border: 1px solid rgba(244, 208, 63, 0.2);
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .feature-card:hover,
+        .feature-card:focus-within {
+            transform: translateY(-5px);
+            border-color: var(--color-accent-amber);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: var(--spacing-sm);
+            fill: var(--color-accent-amber);
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-quran);
+            font-size: 1.3rem;
+            margin-bottom: var(--spacing-xs);
+            color: var(--color-text-primary);
+        }
+
+        .feature-card p {
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Verse of the Day */
+        .verse-of-day {
+            padding: var(--spacing-2xl) 0;
+            background: linear-gradient(180deg, var(--color-bg-primary) 0%, rgba(74, 14, 14, 0.3) 100%);
+        }
+
+        .verse-card {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--color-bg-secondary);
+            border: 2px solid var(--color-accent-amber);
+            border-radius: 16px;
+            padding: var(--spacing-xl);
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Illuminated manuscript corners */
+        .verse-card::before,
+        .verse-card::after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 3px solid var(--color-accent-gold);
+        }
+
+        .verse-card::before {
+            top: 15px;
+            left: 15px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .verse-card::after {
+            bottom: 15px;
+            right: 15px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .verse-label {
+            font-family: var(--font-quran);
+            color: var(--color-accent-amber);
+            font-size: 1rem;
+            margin-bottom: var(--spacing-sm);
+            display: block;
+        }
+
+        .verse-arabic {
+            font-family: var(--font-quran);
+            font-size: 2rem;
+            color: var(--color-text-primary);
+            line-height: 2;
+            text-align: center;
+            margin-bottom: var(--spacing-md);
+            direction: rtl;
+        }
+
+        .verse-translation-text {
+            font-size: 1.1rem;
+            color: var(--color-text-secondary);
+            text-align: center;
+            font-style: italic;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .verse-reference {
+            text-align: center;
+            color: var(--color-accent-sand);
+            font-weight: 700;
+        }
+
+        /* Surah List Preview */
+        .surahs-section {
+            padding: var(--spacing-2xl) 0;
+            background: var(--color-bg-secondary);
+        }
+
+        .surahs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: var(--spacing-xs);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .surah-item {
+            background: rgba(74, 14, 14, 0.3);
+            border: 1px solid rgba(244, 208, 63, 0.1);
+            border-radius: 8px;
+            padding: var(--spacing-sm);
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .surah-item:hover,
+        .surah-item:focus {
+            background: rgba(74, 14, 14, 0.5);
+            border-color: var(--color-accent-amber);
+            transform: scale(1.05);
+        }
+
+        .surah-number {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--color-accent-sand);
+            margin-bottom: 2px;
+        }
+
+        .surah-name {
+            font-family: var(--font-quran);
+            font-size: 1.2rem;
+            color: var(--color-text-primary);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: var(--spacing-2xl) 0;
+            text-align: center;
+            background: linear-gradient(180deg, var(--color-bg-primary) 0%, var(--color-wine) 100%);
+        }
+
+        .cta-section h2 {
+            font-family: var(--font-quran);
+            font-size: 2.5rem;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-accent-amber);
+        }
+
+        .cta-section p {
+            font-size: 1.1rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-lg);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--color-accent-amber), var(--color-accent-gold));
+            color: var(--color-bg-primary);
+            padding: var(--spacing-sm) var(--spacing-xl);
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(244, 208, 63, 0.4);
+        }
+
+        .cta-button:hover,
+        .cta-button:focus {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(244, 208, 63, 0.6);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--color-bg-primary);
+            border-top: 1px solid rgba(244, 208, 63, 0.2);
+            padding: var(--spacing-xl) 0 var(--spacing-md);
+            position: relative;
+        }
+
+        /* Islamic geometric pattern border */
+        .islamic-pattern {
+            position: absolute;
+            top: -1px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    var(--color-accent-gold) 0px,
+                    var(--color-accent-gold) 2px,
+                    transparent 2px,
+                    transparent 10px
+                ),
+                repeating-linear-gradient(
+                    -45deg,
+                    var(--color-accent-gold) 0px,
+                    var(--color-accent-gold) 2px,
+                    transparent 2px,
+                    transparent 10px
+                );
+            opacity: 0.3;
+            background-size: 20px 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-md);
+        }
+
+        .footer-section h4 {
+            font-family: var(--font-quran);
+            color: var(--color-accent-amber);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .footer-section a:hover {
+            color: var(--color-accent-amber);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid rgba(244, 208, 63, 0.1);
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--color-bg-secondary);
+                flex-direction: column;
+                padding: var(--spacing-md);
+                gap: var(--spacing-md);
+                border-bottom: 1px solid rgba(244, 208, 63, 0.2);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .arabic-verse {
+                font-size: 1.8rem;
+            }
+
+            .verse-card {
+                padding: var(--spacing-md);
+            }
+
+            .surahs-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+
+        /* Focus styles */
+        *:focus {
+            outline: 2px solid var(--color-accent-amber);
+            outline-offset: 2px;
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .dune {
+                animation: none;
+            }
+            .particle {
+                animation: none;
+            }
+            .hero-cta,
+            .feature-card,
+            .surah-item,
+            .cta-button {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip to content link -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Navigation -->
+    <nav aria-label="Main navigation">
+        <div class="nav-container">
+            <a href="#" class="logo" aria-label="Quran Stream home">
+                <svg class="logo-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                Quran Stream
+            </a>
+            <button class="mobile-menu-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#surahs">Surahs</a></li>
+                <li><a href="#verse">Verse of Day</a></li>
+                <li><a href="#reciters">Reciters</a></li>
+                <li><a href="#" class="nav-cta">Start Listening</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="main-content" aria-labelledby="hero-title">
+        <!-- Animated dunes -->
+        <div class="dunes" aria-hidden="true">
+            <div class="dune dune-1"></div>
+            <div class="dune dune-2"></div>
+            <div class="dune dune-3"></div>
+        </div>
+
+        <!-- Floating sand particles -->
+        <div class="sand-particles" aria-hidden="true">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+
+        <div class="hero-content">
+            <h1 id="hero-title">Experience the Quran</h1>
+            <p class="subtitle">Immerse yourself in the divine words with beautiful recitations, offline access, and night reading mode — all in a warm, desert-night ambiance.</p>
+
+            <div class="arabic-verse" aria-label="Quranic verse in Arabic">
+                ﴿ إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ ﴾
+            </div>
+            <p class="verse-translation">"Indeed, it is We who sent down the Quran and indeed, We will be its guardian." — Surah Al-Hijr 15:9</p>
+
+            <a href="#cta" class="hero-cta">Begin Your Journey</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features" aria-labelledby="features-title">
+        <div class="container">
+            <h2 class="section-title" id="features-title">Why Choose Quran Stream?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <h3>114 Surahs</h3>
+                    <p>Every chapter of the Holy Quran, beautifully typeset in traditional Arabic script with translations in multiple languages.</p>
+                </div>
+                <div class="feature-card">
+                    <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/>
+                    </svg>
+                    <h3>Renowned Reciters</h3>
+                    <p>Listen to world-famous qaris with flawless tajweed. Each recitation preserves the melodic tradition of Quranic reading.</p>
+                </div>
+                <div class="feature-card">
+                    <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>
+                    </svg>
+                    <h3>Offline Mode</h3>
+                    <p>Download your favorite surahs and recitations for offline listening. Perfect for travel, prayers, or areas with limited connectivity.</p>
+                </div>
+                <div class="feature-card">
+                    <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9 2c-1.05 0-2.05.16-3 .46 4.06 1.27 7 5.06 7 9.54 0 4.48-2.94 8.27-7 9.54.95.3 1.95.46 3 .46 5.52 0 10-4.48 10-10S14.52 2 9 2z"/>
+                    </svg>
+                    <h3>Night Reading</h3>
+                    <p>Specially designed dark mode with warm amber tones reduces eye strain during nighttime devotion while maintaining elegance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Surahs Preview -->
+    <section class="surahs-section" id="surahs" aria-labelledby="surahs-title">
+        <div class="container">
+            <h2 class="section-title" id="surahs-title">Browse All 114 Surahs</h2>
+            <div class="surahs-grid">
+                <div class="surah-item" tabindex="0" role="button" aria-label="Read Surah Al-Fatihah">
+                    <span class="surah-number">1</span>
+                    <span class="surah-name">الفاتحة</span>
+                </div>
+                <div class="surah-item" tabindex="0" role="button" aria-label="Read Surah Al-Baqarah">
+                    <span class="surah-number">2</span>
+                    <span class="surah-name">البقرة</span>
+                </div>
+                <div class="surah-item" tabindex="0" role="button" aria-label="Read Surah Al-Imran">
+                    <span class="surah-number">3</span>
+                    <span class="surah-name">آل عمران</span>
+                </div>
+                <div class="surah-item" tabindex="0" role="button" aria-label="Read Surah An-Nisa">
+                    <span class="surah-number">4</span>
+                    <span class="surah-name">النساء</span>
+                </div>
+                <div class="surah-item" tabindex="0" role="button" aria-label="Read Surah Al-Ma'idah">
+                    <span class="surah-number">5</span>
+                    <span class="surah-name">المائدة</span>
+                </div>
+                <div class="surah-item" tabindex="0" role="button" aria-label="Read Surah Al-An'am">
+                    <span class="surah-number">6</span>
+                    <span class="surah-name">الأنعام</span>
+                </div>
+                <div class="surah-item" tabindex="0" role="button" aria-label="Read Surah Al-A'raf">
+                    <span class="surah-number">7</span>
+                    <span class="surah-name">الأعراف</span>
+                </div>
+                <div class="surah-item" tabindex="0" role="button" aria-label="Read Surah Al-Anfal">
+                    <span class="surah-number">8</span>
+                    <span class="surah-name">الأنفال</span>
+                </div>
+                <div class="surah-item" tabindex="0" role="button" aria-label="Read Surah At-Tawbah">
+                    <span class="surah-number">9</span>
+                    <span class="surah-name">التوبة</span>
+                </div>
+                <div class="surah-item" tabindex="0" role="button" aria-label="Read Surah Yunus">
+                    <span class="surah-number">10</span>
+                    <span class="surah-name">يونس</span>
+                </div>
+                <!-- More surahs would continue in full implementation -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Verse of the Day -->
+    <section class="verse-of-day" id="verse" aria-labelledby="verse-title">
+        <div class="container">
+            <h2 class="section-title" id="verse-title">Verse of the Day</h2>
+            <div class="verse-card">
+                <span class="verse-label">Surah Al-Baqarah (2:286)</span>
+                <p class="verse-arabic" aria-label="Arabic verse">
+                    لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا ۚ لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اكْتَسَبَتْ ۭ رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَسِينَا أَوْ أَخْطَأْنَا ۚ رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِنْ قَبْلِنَا ۚ رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ ۖ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا ۚ أَنْتَ مَوْلَانَا فَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ
+                </p>
+                <p class="verse-translation-text">
+                    "Allah does not burden a soul beyond its capacity. It has the reward of what it earned and the consequence of what it acquired. Our Lord, do not take us to account if we forget or make a mistake. Our Lord, do not lay upon us a burden like that which You laid upon those before us. Our Lord, do not lay upon us what we have no power to bear. And pardon us; forgive us; and have mercy upon us. You are our protector, so give us victory over the disbelieving people."
+                </p>
+                <p class="verse-reference">— Surah Al-Baqarah 2:286</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section" id="cta" aria-labelledby="cta-title">
+        <div class="container">
+            <h2 id="cta-title">Start Listening Today</h2>
+            <p>Download the app or stream directly from your browser. Experience the Quran in a new light — warm, inviting, and deeply peaceful.</p>
+            <a href="#" class="cta-button">Begin Your Journey</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer aria-label="Footer">
+        <div class="islamic-pattern" aria-hidden="true"></div>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>About Quran Stream</h4>
+                    <p>A digital sanctuary for Quranic recitation. Our mission is to make the beautiful words of Allah accessible to everyone, everywhere, in an atmosphere of tranquility and reverence.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <p><a href="#features">Features</a></p>
+                    <p><a href="#surahs">All Surahs</a></p>
+                    <p><a href="#verse">Verse of Day</a></p>
+                    <p><a href="#reciters">Reciters</a></p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Email: support@quranstream.dev</p>
+                    <p>Twitter: @quranstream</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Quran Stream. All rights reserved. Made with respect and devotion.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            const isExpanded = mobileMenuBtn.getAttribute('aria-expanded') === 'true';
+            mobileMenuBtn.setAttribute('aria-expanded', !isExpanded);
+            navLinks.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking on a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href === '#') return;
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Surah item click handler (placeholder)
+        document.querySelectorAll('.surah-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const surahName = this.querySelector('.surah-name').textContent;
+                console.log(`Opening Surah: ${surahName}`);
+                // In a real app, this would navigate to the surah page
+            });
+        });
+    </script>
+</body>
+</html>

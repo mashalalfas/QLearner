@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>QLearner — Celestial Mosque</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #050510;
+      --bg-navy: #0a0a2a;
+      --gold-primary: #FFD700;
+      --gold-light: #FFF9C4;
+      --gold-dim: #b8860b;
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255,255,255,0.7);
+      --card-bg: rgba(20, 20, 50, 0.6);
+      --glass-border: rgba(255, 215, 0, 0.25);
+      --ease: cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html, body { height:100%; overflow:hidden; }
+    body {
+      background: radial-gradient(100% 100% at 50% 0%, var(--bg-navy), var(--bg-deep) 70%);
+      color: var(--text-primary);
+      font-family: 'Poppins', sans-serif;
+      position: relative;
+    }
+
+    /* Font families */
+    .arabic { font-family: 'Amiri', serif; }
+
+    /* Canvas starfield */
+    #starfield {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: linear-gradient(180deg, #060620 0%, #02020a 100%);
+    }
+
+    /* Top mosque silhouette */
+    .mosque-header {
+      position: relative; z-index: 2;
+      height: 120px; width: 100%;
+      display: flex; align-items: flex-end; justify-content: center;
+      padding-bottom: 16px;
+      pointer-events: none;
+    }
+    .mosque-dome {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 260px; height: 120px;
+      background:
+        radial-gradient(ellipse 100% 100% at 50% 100%, transparent 60%, var(--gold-primary) 61%, var(--gold-primary) 63%, transparent 64%),
+        radial-gradient(ellipse 80% 50% at 50% 55%, transparent 65%, var(--gold-primary) 66%, transparent 68%),
+        radial-gradient(ellipse 70% 30% at 50% 48%, transparent 75%, var(--gold-primary) 76%, transparent 78%),
+        radial-gradient(ellipse 60% 20% at 50% 45%, transparent 85%, var(--gold-primary) 86%, transparent 90%);
+      opacity: 0.9;
+      animation: domePulse 6s ease-in-out infinite;
+    }
+    .mosque-minaret {
+      position: absolute; bottom: 0;
+      width: 10px; height: 60px;
+      background: linear-gradient(180deg, var(--gold-primary), var(--gold-dim));
+      border-radius: 5px 5px 0 0;
+      box-shadow: 0 0 12px var(--gold-primary);
+    }
+    .mosque-minaret.left { left: calc(50% - 140px); }
+    .mosque-minaret.right { right: calc(50% - 140px); }
+    .mosque-arch {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 200px; height: 40px;
+      border: 4px solid var(--gold-primary); border-bottom: none;
+      border-radius: 100px 100px 0 0;
+      box-shadow: inset 0 6px 16px rgba(255,215,0,0.15), 0 0 20px rgba(255,215,0,0.2);
+    }
+
+    @keyframes domePulse {
+      0%,100% { opacity: 0.9; filter: drop-shadow(0 0 20px rgba(255,215,0,0.35)); }
+      50% { opacity: 1; filter: drop-shadow(0 0 32px rgba(255,215,0,0.55)); }
+    }
+
+    /* App container & routing */
+    #app { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; }
+    .view {
+      position: absolute; inset: 0;
+      overflow-y: auto; overflow-x: hidden;
+      padding: 16px 16px 100px 16px;
+      opacity: 0; pointer-events: none; transform: translateY(8px);
+      transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+      display: none;
+    }
+    .view.active { opacity: 1; pointer-events: auto; transform: translateY(0); display: block; }
+    .view.exit { opacity: 0; transform: translateY(-8px); }
+
+    /* Typography */
+    h1, h2, h3, h4 { font-weight: 600; letter-spacing: 0.02em; }
+    h1 { font-size: 22px; margin-bottom: 12px; color: var(--gold-primary); }
+    h2 { font-size: 18px; margin-bottom: 8px; color: var(--gold-light); }
+    p { color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
+
+    /* Buttons & icons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 12px 20px;
+      border-radius: 999px; border: none; cursor: pointer;
+      font-family: inherit; font-weight: 500; font-size: 14px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold-primary), var(--gold-dim));
+      color: var(--bg-deep); box-shadow: 0 8px 24px rgba(255,215,0,0.35);
+    }
+    .btn-ghost {
+      background: transparent; border: 1px solid var(--glass-border); color: var(--gold-primary);
+    }
+    .btn-icon {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--gold-primary), var(--gold-dim));
+      color: var(--bg-deep); box-shadow: 0 8px 24px rgba(255,215,0,0.35);
+    }
+    .icon-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: transparent; border: 1px solid var(--glass-border); color: var(--gold-primary);
+      display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .icon-btn:active { transform: scale(0.96); }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      backdrop-filter: blur(12px) saturate(120%);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+      padding: 16px; margin-bottom: 12px;
+    }
+
+    /* Surah grid */
+    .search-bar {
+      width: 100%; padding: 14px 18px; border-radius: 999px;
+      background: rgba(10,10,30,0.6); border: 1px solid var(--glass-border);
+      color: var(--text-primary); font-family: inherit; font-size: 15px;
+      outline: none; margin-bottom: 16px;
+    }
+    .search-bar:focus { border-color: var(--gold-primary); box-shadow: 0 0 0 4px rgba(255,215,0,0.12); }
+    .surah-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+    }
+    .surah-card {
+      background: var(--card-bg); border: 1px solid var(--glass-border);
+      border-radius: 16px; padding: 14px; position: relative; overflow: hidden;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s; cursor: pointer;
+    }
+    .surah-card::before {
+      content: ''; position: absolute; inset: 0; border-radius: 16px;
+      background: radial-gradient(ellipse at 30% 20%, rgba(255,215,0,0.08), transparent 70%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .surah-card:hover::before, .surah-card:focus-within::before { opacity: 1; }
+    .surah-card:hover { border-color: var(--gold-primary); box-shadow: 0 8px 24px rgba(255,215,0,0.2); }
+    .surah-number {
+      position: absolute; top: 10px; right: 12px; font-size: 11px;
+      color: var(--gold-dim); font-weight: 600;
+    }
+    .surah-name-arabic {
+      font-size: 26px; color: var(--gold-light); text-align: center;
+      margin: 8px 0; line-height: 1.2;
+    }
+    .surah-name-en { font-size: 13px; color: var(--text-secondary); text-align: center; }
+    .surah-meta {
+      font-size: 11px; color: var(--text-secondary); text-align: center; margin-top: 6px;
+    }
+
+    /* Surah Detail */
+    .verse-card {
+      border-left: 4px solid var(--gold-primary);
+      border-radius: 12px; padding: 16px; margin-bottom: 12px;
+      background: linear-gradient(90deg, rgba(255,215,0,0.06), transparent);
+      position: relative;
+    }
+    .verse-arabic {
+      font-size: 24px; color: var(--gold-light); text-align: right; line-height: 1.6;
+      margin-bottom: 10px;
+    }
+    .verse-translation { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+    .verse-actions {
+      display: flex; gap: 8px; margin-top: 12px;
+    }
+    .verse-play {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--gold-primary), var(--gold-dim));
+      color: var(--bg-deep); border: none;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .verse-bookmark {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: transparent; border: 1px solid var(--glass-border); color: var(--gold-primary);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+
+    /* Player */
+    #player-view { padding: 0; background: transparent; }
+    .player-ring {
+      position: absolute; top: 50%; left: 50%;
+      width: 300px; height: 300px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 3px solid var(--gold-primary);
+      box-shadow: 0 0 60px rgba(255,215,0,0.5), inset 0 0 60px rgba(255,215,0,0.15);
+      animation: ringRotate 20s linear infinite;
+      display: flex; align-items: center; justify-content: center;
+    }
+    @keyframes ringRotate { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+    .player-content {
+      position: relative; z-index: 3; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 24px;
+    }
+    .player-title { font-size: 20px; color: var(--gold-light); text-align: center; margin-top: 180px; }
+    .player-controls { display: flex; gap: 16px; align-items: center; }
+    .waveform {
+      width: 200px; height: 48px;
+      background: repeating-linear-gradient(90deg,
+        var(--gold-primary) 0px, var(--gold-primary) 3px,
+        transparent 3px, transparent 8px);
+      background-size: 200% 100%;
+      animation: wave 1.5s steps(10) infinite;
+      opacity: 0.6; margin-top: 12px;
+    }
+    @keyframes wave { from { background-position: 100% 0; } to { background-position: 0 0; } }
+    .progress-bar {
+      width: 260px; height: 6px; border-radius: 999px;
+      background: rgba(255,215,0,0.2); overflow: hidden; margin-top: 8px;
+    }
+    .progress-fill {
+      height: 100%; width: 0%; border-radius: 999px;
+      background: linear-gradient(90deg, var(--gold-primary), var(--gold-light));
+      transition: width 0.3s;
+    }
+
+    /* Library */
+    .lib-tabs {
+      display: flex; gap: 4px; background: rgba(10,10,30,0.6);
+      padding: 4px; border-radius: 999px; margin-bottom: 16px;
+    }
+    .lib-tab {
+      flex: 1; padding: 10px; text-align: center;
+      border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--text-secondary);
+      cursor: pointer; transition: all 0.25s;
+    }
+    .lib-tab.active {
+      background: linear-gradient(135deg, var(--gold-primary), var(--gold-dim));
+      color: var(--bg-deep);
+    }
+    .lib-card {
+      border-left: 4px solid var(--gold-primary);
+      background: var(--card-bg); border: 1px solid var(--glass-border);
+      border-radius: 14px; padding: 14px; margin-bottom: 12px;
+    }
+
+    /* Settings */
+    .setting-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 0; border-bottom: 1px solid var(--glass-border);
+    }
+    .toggle {
+      width: 52px; height: 30px; border-radius: 999px;
+      background: rgba(255,215,0,0.15); border: 1px solid var(--glass-border);
+      position: relative; cursor: pointer; transition: background 0.3s;
+    }
+    .toggle::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--gold-dim); box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      transition: transform 0.3s;
+    }
+    .toggle.on { background: rgba(255,215,0,0.3); }
+    .toggle.on::after { transform: translateX(22px); background: var(--gold-primary); }
+    .slider-track {
+      width: 100%; height: 6px; border-radius: 999px;
+      background: rgba(255,215,0,0.2); margin-top: 8px; position: relative;
+    }
+    .slider-thumb {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--gold-primary), var(--gold-dim));
+      box-shadow: 0 4px 12px rgba(255,215,0,0.4);
+      position: absolute; top: 50%; transform: translate(-50%, -50%);
+      cursor: pointer;
+    }
+
+    /* Bottom nav */
+    .bottom-nav {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
+      height: 76px; background: rgba(5,5,16,0.85);
+      backdrop-filter: blur(16px) saturate(120%);
+      border-top: 1px solid var(--glass-border);
+      display: flex; justify-content: space-around; align-items: flex-start; padding-top: 12px;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      color: var(--text-secondary); font-size: 11px; cursor: pointer;
+      transition: color 0.25s;
+    }
+    .nav-item.active { color: var(--gold-primary); }
+    .nav-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: transparent; border: 1.5px solid transparent;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .nav-item.active .nav-icon {
+      border-color: var(--gold-primary); box-shadow: 0 0 16px rgba(255,215,0,0.35);
+    }
+
+    /* Utilities */
+    .hidden { display: none !important; }
+    .fade-enter { opacity: 0; transform: translateY(6px); }
+    .fade-enter-active { opacity: 1; transform: translateY(0); transition: all 0.3s var(--ease); }
+  </style>
+</head>
+<body>
+  <canvas id="starfield"></canvas>
+
+  <div class="mosque-header">
+    <div class="mosque-dome"></div>
+    <div class="mosque-minaret left"></div>
+    <div class="mosque-arch"></div>
+    <div class="mosque-minaret right"></div>
+  </div>
+
+  <div id="app">
+    <!-- Home View -->
+    <section id="home-view" class="view active">
+      <h1>Quran</h1>
+      <input type="text" class="search-bar" placeholder="Search surah..." id="search-input" />
+      <div class="surah-grid" id="surah-grid"></div>
+    </section>
+
+    <!-- Surah Detail View -->
+    <section id="surah-view" class="view">
+      <div class="card">
+        <h2 id="surah-title"></h2>
+        <p id="surah-meta" style="margin-bottom: 16px;"></p>
+      </div>
+      <div id="verses-container"></div>
+    </section>
+
+    <!-- Player View -->
+    <section id="player-view" class="view">
+      <div class="player-ring"></div>
+      <div class="player-content">
+        <div class="player-title" id="player-title">Select a verse</div>
+        <div class="player-controls">
+          <button class="btn-icon" id="prev-btn">⏮</button>
+          <button class="btn-icon" id="play-btn" style="width:64px;height:64px;">▶</button>
+          <button class="btn-icon" id="next-btn">⏭</button>
+        </div>
+        <div class="waveform"></div>
+        <div class="progress-bar"><div class="progress-fill" id="player-progress"></div></div>
+      </div>
+    </section>
+
+    <!-- Library View -->
+    <section id="library-view" class="view">
+      <h1>Library</h1>
+      <div class="lib-tabs">
+        <div class="lib-tab active" data-tab="bookmarks">Bookmarks</div>
+        <div class="lib-tab" data-tab="history">History</div>
+        <div class="lib-tab" data-tab="downloads">Downloads</div>
+      </div>
+      <div id="library-content"></div>
+    </section>
+
+    <!-- Settings View -->
+    <section id="settings-view" class="view">
+      <h1>Settings</h1>
+      <div class="card">
+        <div class="setting-row">
+          <span>Night Mode</span>
+          <div class="toggle on" id="toggle-night"></div>
+        </div>
+        <div class="setting-row">
+          <span>Auto-scroll</span>
+          <div class="toggle" id="toggle-scroll"></div>
+        </div>
+        <div class="setting-row">
+          <span>Repeat</span>
+          <div class="toggle on" id="toggle-repeat"></div>
+        </div>
+        <div class="setting-row">
+          <span>Font Size</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-thumb" id="font-slider" style="left: 40%;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <div class="nav-item active" data-target="home-view">
+        <div class="nav-icon">🏠</div>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" data-target="library-view">
+        <div class="nav-icon">📚</div>
+        <span>Library</span>
+      </div>
+      <div class="nav-item" data-target="player-view">
+        <div class="nav-icon">▶️</div>
+        <span>Player</span>
+      </div>
+      <div class="nav-item" data-target="settings-view">
+        <div class="nav-icon">⚙️</div>
+        <span>Settings</span>
+      </div>
+    </nav>
+  </div>
+
+  <script>
+    // ==================== STARFIELD ====================
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    let stars = [], twinkle = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initStars();
+    }
+    function initStars() {
+      stars = [];
+      const count = Math.floor((canvas.width * canvas.height) / 6000);
+      for (let i = 0; i < count; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2 + 0.5,
+          alpha: Math.random() * 0.6 + 0.2
+        });
+        twinkle.push({ dir: 1, speed: 0.005 + Math.random() * 0.01 });
+      }
+    }
+    function drawStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < stars.length; i++) {
+        const s = stars[i];
+        s.alpha += twinkle[i].dir * twinkle[i].speed;
+        if (s.alpha >= 1) { s.alpha = 1; twinkle[i].dir = -1; }
+        if (s.alpha <= 0.2) { s.alpha = 0.2; twinkle[i].dir = 1; }
+        ctx.fillStyle = `rgba(255, 215, 0, ${s.alpha})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      requestAnimationFrame(drawStars);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    drawStars();
+
+    // ==================== SURAH DATA ====================
+    const surahs = [
+      { id: 1, name: "Al-Fatihah", english: "The Opening", verses: 7, type: "Meccan" },
+      { id: 2, name: "Al-Baqarah", english: "The Cow", verses: 286, type: "Medinan" },
+      { id: 3, name: "Aal-E-Imran", english: "Family of Imran", verses: 200, type: "Medinan" },
+      { id: 4, name: "An-Nisa", english: "The Women", verses: 176, type: "Medinan" },
+      { id: 5, name: "Al-Ma'idah", english: "The Table Spread", verses: 120, type: "Medinan" },
+      { id: 6, name: "Al-An'am", english: "The Cattle", verses: 165, type: "Meccan" },
+      { id: 7, name: "Al-A'raf", english: "The Heights", verses: 206, type: "Meccan" },
+      { id: 8, name: "Al-Anfal", english: "The Spoils of War", verses: 75, type: "Medinan" },
+      { id: 9, name: "At-Tawbah", english: "The Repentance", verses: 129, type: "Medinan" },
+      { id: 10, name: "Yunus", english: "Jonah", verses: 109, type: "Meccan" },
+      { id: 11, name: "Hud", english: "Hud", verses: 123, type: "Meccan" },
+      { id: 12, name: "Yusuf", english: "Joseph", verses: 111, type: "Meccan" },
+      { id: 13, name: "Ar-Ra'd", english: "The Thunder", verses: 43, type: "Medinan" },
+      { id: 14, name: "Ibrahim", english: "Abraham", verses: 52, type: "Meccan" },
+      { id: 15, name: "Al-Hijr", english: "The Rocky Tract", verses: 99, type: "Meccan" },
+      { id: 16, name: "An-Nahl", english: "The Bee", verses: 128, type: "Meccan" },
+      { id: 17, name: "Al-Isra", english: "The Night Journey", verses: 111, type: "Meccan" },
+      { id: 18, name: "Al-Kahf", english: "The Cave", verses: 110, type: "Meccan" },
+      { id: 19, name: "Maryam", english: "Mary", verses: 98, type: "Meccan" },
+      { id: 20, name: "Ta-Ha", english: "Ta-Ha", verses: 135, type: "Meccan" }
+    ];
+
+    const sampleVerses = [
+      { arabic: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", translation: "In the name of Allah, the Entirely Merciful, the Especially Merciful." },
+      { arabic: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", translation: "All praise is due to Allah, Lord of the worlds." },
+      { arabic: "الرَّحْمَٰنِ الرَّحِيمِ", translation: "The Entirely Merciful, the Especially Merciful." },
+      { arabic: "مَالِكِ يَوْمِ الدِّينِ", translation: "Sovereign of the Day of Recompense." },
+      { arabic: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ", translation: "It is You we worship and You we ask for help." },
+      { arabic: "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ", translation: "Guide us to the straight path." },
+      { arabic: "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ", translation: "The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray." }
+    ];
+
+    // ==================== ROUTER ====================
+    const routes = { '': 'home', 'surah': 'surah', 'player': 'player', 'library': 'library', 'settings': 'settings' };
+
+    function navigate(route, param = null) {
+      const viewMap = { home: 'home-view', surah: 'surah-view', player: 'player-view', library: 'library-view', settings: 'settings-view' };
+      const targetId = viewMap[route];
+      if (!targetId) return;
+
+      document.querySelectorAll('.view').forEach(v => {
+        v.classList.remove('active');
+        v.classList.add('exit');
+      });
+      setTimeout(() => {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('exit'));
+      }, 350);
+
+      const target = document.getElementById(targetId);
+      target.classList.add('active');
+      window.location.hash = param ? `#${route}/${param}` : `#${route}`;
+
+      // Update nav
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.target === targetId);
+      });
+
+      if (route === 'surah') loadSurahDetail(Number(param));
+      if (route === 'library') renderLibrary('bookmarks');
+    }
+
+    window.addEventListener('hashchange', () => {
+      const hash = window.location.hash.slice(1) || '';
+      const parts = hash.split('/');
+      const route = routes[parts[0]] || 'home';
+      navigate(route, parts[1]);
+    });
+
+    // ==================== HOME VIEW ====================
+    function renderSurahGrid(filter = '') {
+      const grid = document.getElementById('surah-grid');
+      grid.innerHTML = '';
+      surahs.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()) || s.english.toLowerCase().includes(filter.toLowerCase()))
+        .forEach(s => {
+          const card = document.createElement('div');
+          card.className = 'surah-card';
+          card.innerHTML = `
+            <span class="surah-number">${s.id}</span>
+            <div class="surah-name-arabic arabic">${s.name}</div>
+            <div class="surah-name-en">${s.english}</div>
+            <div class="surah-meta">${s.verses} verses • ${s.type}</div>
+          `;
+          card.onclick = () => navigate('surah', s.id);
+          grid.appendChild(card);
+        });
+    }
+
+    document.getElementById('search-input').addEventListener('input', (e) => renderSurahGrid(e.target.value));
+    renderSurahGrid();
+
+    // ==================== SURAH DETAIL ====================
+    function loadSurahDetail(id) {
+      const surah = surahs.find(s => s.id === id);
+      if (!surah) return;
+      document.getElementById('surah-title').textContent = `${surah.name} — ${surah.english}`;
+      document.getElementById('surah-meta').textContent = `${surah.verses} verses • ${surah.type}`;
+
+      const container = document.getElementById('verses-container');
+      container.innerHTML = '';
+      sampleVerses.forEach((v, idx) => {
+        const card = document.createElement('div');
+        card.className = 'verse-card';
+        card.innerHTML = `
+          <div class="verse-arabic arabic">${v.arabic}</div>
+          <div class="verse-translation">${v.translation}</div>
+          <div class="verse-actions">
+            <button class="verse-play" data-index="${idx}">▶</button>
+            <button class="verse-bookmark">☪</button>
+          </div>
+        `;
+        card.querySelector('.verse-play').onclick = () => playVerse(idx);
+        card.querySelector('.verse-bookmark').onclick = () => {
+          const btn = card.querySelector('.verse-bookmark');
+          btn.style.color = btn.style.color === 'rgb(255, 215, 0)' ? 'var(--gold-primary)' : '#FFD700';
+          btn.style.borderColor = btn.style.color;
+        };
+        container.appendChild(card);
+      });
+    }
+
+    // ==================== PLAYER ====================
+    let isPlaying = false;
+    let progress = 0;
+    let playerInterval = null;
+
+    function playVerse(idx) {
+      document.getElementById('player-title').textContent = `Playing verse ${idx + 1}`;
+      navigate('player');
+      if (!isPlaying) togglePlay(true);
+    }
+
+    function togglePlay(forceOn = false) {
+      isPlaying = forceOn || !isPlaying;
+      document.getElementById('play-btn').textContent = isPlaying ? '⏸' : '▶';
+      if (isPlaying) {
+        playerInterval = setInterval(() => {
+          progress = (progress + 0.4) % 100;
+          document.getElementById('player-progress').style.width = progress + '%';
+        }, 80);
+      } else {
+        clearInterval(playerInterval);
+      }
+    }
+
+    document.getElementById('play-btn').onclick = () => togglePlay();
+    document.getElementById('prev-btn').onclick = () => { progress = 0; playVerse(0); };
+    document.getElementById('next-btn').onclick = () => { progress = 0; playVerse(1); };
+
+    // ==================== LIBRARY ====================
+    function renderLibrary(tab) {
+      document.querySelectorAll('.lib-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+      const content = document.getElementById('library-content');
+      content.innerHTML = '';
+      const data = tab === 'bookmarks' ? [{title: 'Al-Fatihah — Verse 1'}, {title: 'Al-Kahf — Verse 1'}] :
+                    tab === 'history' ? [{title: 'Recently: Al-Fatihah'}, {title: 'Recently: Yaseen'}] :
+                    [{title: 'Downloaded: Recitation 1'}, {title: 'Downloaded: Translation (EN)'}];
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'lib-card';
+        card.innerHTML = `<h3>${item.title}</h3><p>Tap to open</p>`;
+        card.onclick = () => alert(`Open ${item.title}`);
+        content.appendChild(card);
+      });
+    }
+    document.querySelectorAll('.lib-tab').forEach(tab => {
+      tab.onclick = () => renderLibrary(tab.dataset.tab);
+    });
+
+    // ==================== SETTINGS ====================
+    function setupToggle(id) {
+      const el = document.getElementById(id);
+      el.onclick = () => {
+        el.classList.toggle('on');
+        // Save preference in localStorage
+        localStorage.setItem(id, el.classList.contains('on'));
+      };
+      // Load saved state
+      const saved = localStorage.getItem(id);
+      if (saved !== null) saved === 'true' ? el.classList.add('on') : el.classList.remove('on');
+    }
+    setupToggle('toggle-night');
+    setupToggle('toggle-scroll');
+    setupToggle('toggle-repeat');
+
+    // Font size slider
+    const fontSlider = document.getElementById('font-slider');
+    fontSlider.onclick = (e) => {
+      const rect = fontSlider.parentElement.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      x = Math.max(0, Math.min(x, rect.width));
+      const percent = (x / rect.width) * 100;
+      fontSlider.style.left = percent + '%';
+      document.documentElement.style.setProperty('--base-font-size', percent + '%');
+    };
+
+    // ==================== NAVIGATION ====================
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.onclick = () => {
+        const target = item.dataset.target.replace('-view', '');
+        navigate(target);
+      };
+    });
+
+    // Initial route
+    window.addEventListener('load', () => {
+      const hash = window.location.hash.slice(1) || '';
+      const parts = hash.split('/');
+      const route = routes[parts[0]] || 'home';
+      navigate(route, parts[1]);
+    });
+
+    // Smooth view transitions on back/forward
+    window.addEventListener('popstate', () => {
+      const hash = window.location.hash.slice(1) || '';
+      const parts = hash.split('/');
+      const route = routes[parts[0]] || 'home';
+      navigate(route, parts[1]);
+    });
+  </script>
+</body>
+</html>

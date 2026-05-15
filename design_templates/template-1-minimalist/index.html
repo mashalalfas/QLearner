@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="QLearner - A modern Quran learning app for personalized, interactive study">
+    <title>QLearner | Modern Quran Learning</title>
+    <style>
+        /* CSS Custom Properties */
+        :root {
+            --color-bg: #ffffff;
+            --color-bg-secondary: #f9fafb;
+            --color-text: #111827;
+            --color-text-secondary: #6b7280;
+            --color-accent: #1e40af;
+            --color-accent-hover: #1d4ed8;
+            --color-border: #e5e7eb;
+            --color-border-dark: #d1d5db;
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            --spacing-2xl: 4rem;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --font-weight-normal: 400;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            --border-radius: 8px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --max-width: 1200px;
+            --transition: 150ms ease-in-out;
+        }
+
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-bg: #111827;
+                --color-bg-secondary: #1f2937;
+                --color-text: #f9fafb;
+                --color-text-secondary: #9ca3af;
+                --color-border: #374151;
+                --color-border-dark: #4b5563;
+                --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+                --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+                --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        /* Reset & Base */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-weight: var(--font-weight-normal);
+            line-height: 1.6;
+            color: var(--color-text);
+            background-color: var(--color-bg);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Skip Link for Accessibility */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--color-accent);
+            color: white;
+            padding: var(--spacing-sm);
+            z-index: 1000;
+            transition: top var(--transition);
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 var(--spacing-md);
+        }
+
+        /* Navigation */
+        .nav {
+            position: sticky;
+            top: 0;
+            background: var(--color-bg);
+            border-bottom: 1px solid var(--color-border);
+            z-index: 100;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .nav__inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+
+        .nav__logo {
+            font-size: 1.25rem;
+            font-weight: var(--font-weight-bold);
+            color: var(--color-accent);
+            text-decoration: none;
+            letter-spacing: -0.025em;
+        }
+
+        .nav__list {
+            display: none;
+            list-style: none;
+            gap: var(--spacing-lg);
+        }
+
+        .nav__link {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-weight: var(--font-weight-semibold);
+            font-size: 0.9375rem;
+            transition: color var(--transition);
+        }
+
+        .nav__link:hover,
+        .nav__link:focus {
+            color: var(--color-accent);
+        }
+
+        .nav__cta {
+            background: var(--color-accent);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: var(--font-weight-semibold);
+            font-size: 0.875rem;
+            transition: background var(--transition), transform var(--transition);
+        }
+
+        .nav__cta:hover,
+        .nav__cta:focus {
+            background: var(--color-accent-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Mobile Menu Toggle */
+        .nav__toggle {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: var(--spacing-xs);
+        }
+
+        .nav__toggle span {
+            width: 24px;
+            height: 2px;
+            background: var(--color-text);
+            transition: var(--transition);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: var(--spacing-2xl) 0;
+            text-align: center;
+            background: var(--color-bg-secondary);
+        }
+
+        .hero__content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero__badge {
+            display: inline-block;
+            background: var(--color-accent);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .hero__title {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: var(--font-weight-bold);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .hero__subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            color: var(--color-text-secondary);
+            max-width: 600px;
+            margin: 0 auto var(--spacing-lg);
+            line-height: 1.7;
+        }
+
+        .hero__cta-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            font-weight: var(--font-weight-semibold);
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all var(--transition);
+            cursor: pointer;
+            border: none;
+            min-height: 48px;
+        }
+
+        .btn--primary {
+            background: var(--color-accent);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn--primary:hover,
+        .btn--primary:focus {
+            background: var(--color-accent-hover);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .btn--secondary {
+            background: transparent;
+            color: var(--color-text);
+            border: 1px solid var(--color-border-dark);
+        }
+
+        .btn--secondary:hover,
+        .btn--secondary:focus {
+            background: var(--color-bg-secondary);
+            border-color: var(--color-text-secondary);
+        }
+
+        /* Features Section */
+        .features {
+            padding: var(--spacing-2xl) 0;
+        }
+
+        .features__header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .features__title {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-sm);
+            letter-spacing: -0.02em;
+        }
+
+        .features__subtitle {
+            font-size: 1.125rem;
+            color: var(--color-text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features__grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        .feature-card {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            transition: all var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .feature-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-4px);
+            border-color: var(--color-accent);
+        }
+
+        .feature-card__icon {
+            width: 48px;
+            height: 48px;
+            background: var(--color-accent);
+            color: white;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--spacing-md);
+            font-size: 1.5rem;
+        }
+
+        .feature-card__title {
+            font-size: 1.25rem;
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .feature-card__text {
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: var(--spacing-2xl) 0;
+            background: var(--color-bg-secondary);
+        }
+
+        .contact__content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contact__header {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .contact__title {
+            font-size: clamp(1.75rem, 4vw, 2.25rem);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .contact__subtitle {
+            color: var(--color-text-secondary);
+            font-size: 1.125rem;
+        }
+
+        .contact__form {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-label {
+            display: block;
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-xs);
+            font-size: 0.875rem;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: var(--spacing-sm);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 1rem;
+            background: var(--color-bg);
+            color: var(--color-text);
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            text-align: center;
+        }
+
+        .btn--full {
+            width: 100%;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--color-bg-secondary);
+            border-top: 1px solid var(--color-border);
+            padding: var(--spacing-xl) 0 var(--spacing-lg);
+        }
+
+        .footer__grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .footer__brand {
+            max-width: 300px;
+        }
+
+        .footer__logo {
+            font-size: 1.25rem;
+            font-weight: var(--font-weight-bold);
+            color: var(--color-accent);
+            text-decoration: none;
+            margin-bottom: var(--spacing-sm);
+            display: inline-block;
+        }
+
+        .footer__tagline {
+            color: var(--color-text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        .footer__links {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .footer__link {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            transition: color var(--transition);
+        }
+
+        .footer__link:hover,
+        .footer__link:focus {
+            color: var(--color-accent);
+        }
+
+        .footer__bottom {
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive Breakpoints */
+        @media (min-width: 768px) {
+            :root {
+                --spacing-lg: 2.5rem;
+                --spacing-xl: 4rem;
+                --spacing-2xl: 6rem;
+            }
+
+            .nav__list {
+                display: flex;
+            }
+
+            .nav__toggle {
+                display: none;
+            }
+
+            .hero__cta-group {
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .features__grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer__grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .features__grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .footer__grid {
+                grid-template-columns: 2fr 1fr 1fr 1fr;
+            }
+
+            .footer__links {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: var(--spacing-md);
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+
+        /* Utility Classes */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Navigation -->
+    <nav class="nav" aria-label="Main navigation">
+        <div class="container nav__inner">
+            <a href="#" class="nav__logo">QLearner</a>
+
+            <button class="nav__toggle" aria-label="Toggle menu" aria-expanded="false" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav__list" id="nav-menu" role="menubar">
+                <li role="none"><a href="#features" class="nav__link" role="menuitem">Features</a></li>
+                <li role="none"><a href="#contact" class="nav__link" role="menuitem">Contact</a></li>
+                <li role="none"><a href="#contact" class="nav__cta" role="menuitem">Get Started</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <!-- Hero Section -->
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="container hero__content">
+                <span class="hero__badge animate-in">New: AI-Powered Learning</span>
+                <h1 id="hero-title" class="hero__title animate-in delay-1">
+                    Learn the Quran with Modern Tools
+                </h1>
+                <p class="hero__subtitle animate-in delay-2">
+                    QLearner combines traditional Quranic education with interactive technology.
+                    Personalized lessons, real-time feedback, and progress tracking help you
+                    build a lasting connection with the Holy Quran.
+                </p>
+                <div class="hero__cta-group animate-in delay-3">
+                    <a href="#contact" class="btn btn--primary">Start Free Trial</a>
+                    <a href="#features" class="btn btn--secondary">Explore Features</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features" aria-labelledby="features-title">
+            <div class="container">
+                <header class="features__header">
+                    <h2 id="features-title" class="features__title">Why Choose QLearner?</h2>
+                    <p class="features__subtitle">
+                        Our comprehensive platform supports every step of your Quran learning journey,
+                        from beginner recitation to advanced tajweed mastery.
+                    </p>
+                </header>
+
+                <div class="features__grid">
+                    <article class="feature-card">
+                        <div class="feature-card__icon" aria-hidden="true">📖</div>
+                        <h3 class="feature-card__title">Structured Curriculum</h3>
+                        <p class="feature-card__text">
+                            Follow a carefully designed learning path that progresses from alphabets
+                            to fluent recitation, with clear milestones and achievements along the way.
+                        </p>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-card__icon" aria-hidden="true">🎤</div>
+                        <h3 class="feature-card__title">Voice Recognition</h3>
+                        <p class="feature-card__text">
+                            Our advanced speech analysis provides instant feedback on your pronunciation,
+                            helping you perfect each verse with confidence and accuracy.
+                        </p>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-card__icon" aria-hidden="true">📊</div>
+                        <h3 class="feature-card__title">Progress Tracking</h3>
+                        <p class="feature-card__text">
+                            Visual dashboards show your learning statistics, memorization streaks,
+                            and areas needing practice to keep you motivated and on track.
+                        </p>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-card__icon" aria-hidden="true">👨‍🏫</div>
+                        <h3 class="feature-card__title">Expert Teachers</h3>
+                        <p class="feature-card__text">
+                            Connect with qualified Quran instructors for one-on-one sessions
+                            and receive personalized guidance tailored to your goals.
+                        </p>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-card__icon" aria-hidden="true">🌙</div>
+                        <h3 class="feature-card__title">Flexible Learning</h3>
+                        <p class="feature-card__text">
+                            Study anytime, anywhere with our mobile-friendly platform.
+                            Lessons sync across devices so you never miss a day of practice.
+                        </p>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-card__icon" aria-hidden="true">🔒</div>
+                        <h3 class="feature-card__title">Safe & Private</h3>
+                        <p class="feature-card__text">
+                            Your learning data is encrypted and protected. We respect your privacy
+                            while providing a secure environment for spiritual growth.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact" aria-labelledby="contact-title">
+            <div class="container contact__content">
+                <header class="contact__header">
+                    <h2 id="contact-title" class="contact__title">Ready to Begin?</h2>
+                    <p class="contact__subtitle">
+                        Join thousands of students worldwide. Enter your details and we'll
+                        send you access to our free starter package.
+                    </p>
+                </header>
+
+                <form class="contact__form" action="#" method="POST" onsubmit="handleSubmit(event)">
+                    <div class="form-group">
+                        <label for="name" class="form-label">Full Name</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            class="form-input"
+                            placeholder="Enter your name"
+                            required
+                            autocomplete="name"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            class="form-input"
+                            placeholder="your@email.com"
+                            required
+                            autocomplete="email"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message" class="form-label">Tell us about your goals</label>
+                        <textarea
+                            id="message"
+                            name="message"
+                            class="form-textarea"
+                            placeholder="What would you like to achieve with QLearner?"
+                            rows="4"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary btn--full">
+                            Get Started Free
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div class="footer__grid">
+                <div class="footer__brand">
+                    <a href="#" class="footer__logo">QLearner</a>
+                    <p class="footer__tagline">
+                        Empowering Muslims worldwide to learn, understand, and connect
+                        with the Quran through modern technology.
+                    </p>
+                </div>
+
+                <div class="footer__links">
+                    <h4 class="form-label">Product</h4>
+                    <a href="#" class="footer__link">Features</a>
+                    <a href="#" class="footer__link">Pricing</a>
+                    <a href="#" class="footer__link">Mobile App</a>
+                </div>
+
+                <div class="footer__links">
+                    <h4 class="form-label">Company</h4>
+                    <a href="#" class="footer__link">About Us</a>
+                    <a href="#" class="footer__link">Careers</a>
+                    <a href="#" class="footer__link">Blog</a>
+                </div>
+
+                <div class="footer__links">
+                    <h4 class="form-label">Support</h4>
+                    <a href="#" class="footer__link">Help Center</a>
+                    <a href="#" class="footer__link">Contact</a>
+                    <a href="#" class="footer__link">Privacy Policy</a>
+                </div>
+            </div>
+
+            <div class="footer__bottom">
+                <p>&copy; 2026 QLearner. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Navigation Toggle
+        function toggleMenu() {
+            const menu = document.getElementById('nav-menu');
+            const toggle = document.querySelector('.nav__toggle');
+            const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+
+            toggle.setAttribute('aria-expanded', !isExpanded);
+            menu.style.display = isExpanded ? 'none' : 'flex';
+
+            // Animate hamburger to X
+            const spans = toggle.querySelectorAll('span');
+            if (!isExpanded) {
+                spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+                spans[1].style.opacity = '0';
+                spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+            } else {
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            }
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const nav = document.querySelector('.nav');
+            const toggle = document.querySelector('.nav__toggle');
+            const menu = document.getElementById('nav-menu');
+
+            if (!nav.contains(event.target) && menu.style.display === 'flex') {
+                toggleMenu();
+            }
+        });
+
+        // Form submission handler (demo only)
+        function handleSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const button = form.querySelector('button[type="submit"]');
+            const originalText = button.textContent;
+
+            // Simulate submission
+            button.textContent = 'Sending...';
+            button.disabled = true;
+
+            setTimeout(() => {
+                button.textContent = 'Thank you! We\'ll be in touch.';
+                button.style.background = '#10b981'; // Success green
+
+                setTimeout(() => {
+                    form.reset();
+                    button.textContent = originalText;
+                    button.disabled = false;
+                    button.style.background = ''; // Reset to accent color
+                }, 2000);
+            }, 1500);
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+
+                    // Close mobile menu if open
+                    const menu = document.getElementById('nav-menu');
+                    const toggle = document.querySelector('.nav__toggle');
+                    if (menu.style.display === 'flex') {
+                        toggleMenu();
+                    }
+                }
+            });
+        });
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Apply fade-in animation to feature cards on scroll
+        document.querySelectorAll('.feature-card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `opacity 0.5s ease ${index * 0.1}s, transform 0.5s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
+
+        // Keyboard navigation for accessibility
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const menu = document.getElementById('nav-menu');
+                const toggle = document.querySelector('.nav__toggle');
+                if (menu.style.display === 'flex') {
+                    toggleMenu();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

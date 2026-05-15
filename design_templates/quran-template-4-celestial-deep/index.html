@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The Quran, Everywhere - Stream the Holy Quran with beautiful celestial design. Listen, read, memorize and understand the Quran anywhere.">
+  <meta name="theme-color" content="#050510">
+  <title>The Quran, Everywhere | Celestial Quran App</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Starfield Background -->
+  <canvas id="starfield"></canvas>
+  <div class="cosmic-overlay"></div>
+  
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="#" class="logo" aria-label="Quran App Home">
+        <span>✦</span> Quran
+      </a>
+      <ul class="nav-links">
+        <li><a href="#pillars">Features</a></li>
+        <li><a href="#surahs">Surahs</a></li>
+        <li><a href="#download">Get App</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+    </div>
+  </nav>
+  
+  <!-- Hero Section -->
+  <section class="hero" id="home" aria-labelledby="hero-title">
+    <div class="container">
+      <div class="hero-content">
+        <h1 id="hero-title">The Quran, Everywhere</h1>
+        <p>Experience the divine words of the Holy Quran with a streaming app designed for the modern seeker. Listen, read, memorize, and understand — all in one celestial interface.</p>
+        <div class="hero-cta">
+          <a href="#download" class="btn btn-primary">
+            <span class="btn-icon">⬇</span> Download App
+          </a>
+          <a href="#pillars" class="btn btn-secondary">
+            <span class="btn-icon">⋆</span> Explore Features
+          </a>
+        </div>
+      </div>
+    </div>
+    <!-- Floating Moon Icon -->
+    <div class="moon-float" aria-hidden="true"></div>
+  </section>
+  
+  <!-- Four Pillars Section -->
+  <section class="pillars" id="pillars" aria-labelledby="pillars-title">
+    <div class="container">
+      <h2 class="section-title" id="pillars-title">Ways to Engage</h2>
+      <div class="pillars-grid">
+        <!-- Listen -->
+        <article class="pillar-card">
+          <span class="pillar-icon" aria-hidden="true">♫</span>
+          <h3>Listen</h3>
+          <p>Stream high-quality recitations from world-renowned qaris. Immerse yourself in the melodic beauty of the Quran with adjustable playback speed and repeat modes.</p>
+        </article>
+        
+        <!-- Read -->
+        <article class="pillar-card">
+          <span class="pillar-icon" aria-hidden="true">☪</span>
+          <h3>Read</h3>
+          <p>Access the Quran in beautiful Arabic script with multiple translations. Follow along with color-coded tajweed rules and interactive verse-by-verse navigation.</p>
+        </article>
+        
+        <!-- Memorize -->
+        <article class="pillar-card">
+          <span class="pillar-icon" aria-hidden="true">∞</span>
+          <h3>Memorize</h3>
+          <p>Build a daily hifz habit with smart repetition schedules, audio repeats, and progress tracking. Let the celestial guide help you preserve the words in your heart.</p>
+        </article>
+        
+        <!-- Understand -->
+        <article class="pillar-card">
+          <span class="pillar-icon" aria-hidden="true">☉</span>
+          <h3>Understand</h3>
+          <p>Dive deeper with tafsir explanations, word-by-word analysis, and contextual commentary. Illuminate your understanding with insights from classical and contemporary scholars.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Surah Browser Preview -->
+  <section class="surah-browser" id="surahs" aria-labelledby="surahs-title">
+    <div class="container">
+      <h2 class="section-title" id="surahs-title">Browse Surahs</h2>
+      <div class="surah-grid" role="list">
+        <!-- Surah 1: Al-Fatihah -->
+        <div class="surah-card" role="listitem" tabindex="0" aria-label="Surah Al-Fatihah, The Opening">
+          <span class="surah-number">1</span>
+          <span class="surah-name-arabic">الفاتحة</span>
+          <span class="surah-name-translated">Al-Fatihah</span>
+        </div>
+        
+        <!-- Surah 2: Al-Baqarah -->
+        <div class="surah-card" role="listitem" tabindex="0" aria-label="Surah Al-Baqarah, The Cow">
+          <span class="surah-number">2</span>
+          <span class="surah-name-arabic">البقرة</span>
+          <span class="surah-name-translated">Al-Baqarah</span>
+        </div>
+        
+        <!-- Surah 3: Aal-E-Imran -->
+        <div class="surah-card" role="listitem" tabindex="0" aria-label="Surah Aal-E-Imran, Family of Imran">
+          <span class="surah-number">3</span>
+          <span class="surah-name-arabic">آل عمران</span>
+          <span class="surah-name-translated">Aal-E-Imran</span>
+        </div>
+        
+        <!-- Surah 4: An-Nisa -->
+        <div class="surah-card" role="listitem" tabindex="0" aria-label="Surah An-Nisa, The Women">
+          <span class="surah-number">4</span>
+          <span class="surah-name-arabic">النساء</span>
+          <span class="surah-name-translated">An-Nisa</span>
+        </div>
+        
+        <!-- Surah 5: Al-Ma'idah -->
+        <div class="surah-card" role="listitem" tabindex="0" aria-label="Surah Al-Ma'idah, The Table Spread">
+          <span class="surah-number">5</span>
+          <span class="surah-name-arabic">المائدة</span>
+          <span class="surah-name-translated">Al-Ma'idah</span>
+        </div>
+        
+        <!-- Surah 6: Al-An'am -->
+        <div class="surah-card" role="listitem" tabindex="0" aria-label="Surah Al-An'am, The Cattle">
+          <span class="surah-number">6</span>
+          <span class="surah-name-arabic">الأنعام</span>
+          <span class="surah-name-translated">Al-An'am</span>
+        </div>
+        
+        <!-- Surah 7: Al-A'raf -->
+        <div class="surah-card" role="listitem" tabindex="0" aria-label="Surah Al-A'raf, The Heights">
+          <span class="surah-number">7</span>
+          <span class="surah-name-arabic">الأعراف</span>
+          <span class="surah-name-translated">Al-A'raf</span>
+        </div>
+        
+        <!-- Surah 8: Al-Anfal -->
+        <div class="surah-card" role="listitem" tabindex="0" aria-label="Surah Al-Anfal, The Spoils of War">
+          <span class="surah-number">8</span>
+          <span class="surah-name-arabic">الأنفال</span>
+          <span class="surah-name-translated">Al-Anfal</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Download/CTA Section -->
+  <section class="download-section" id="download" aria-labelledby="download-title">
+    <div class="container">
+      <h2 class="section-title" id="download-title">Begin Your Journey</h2>
+      <div style="text-align: center; max-width: 600px; margin: 0 auto;">
+        <p style="color: var(--color-text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">
+          Carry the Quran with you wherever you go. Available now on iOS and Android.
+        </p>
+        <div class="hero-cta">
+          <a href="#" class="btn btn-primary">
+            <span class="btn-icon"></span> App Store
+          </a>
+          <a href="#" class="btn btn-primary">
+            <span class="btn-icon">▶</span> Google Play
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Footer -->
+  <footer class="footer" id="about" role="contentinfo">
+    <div class="container">
+      <p>© 2026 Celestial Quran. Made with reverence and respect.</p>
+      <p style="margin-top: 0.5rem; font-size: 0.85rem;">
+        <a href="#" style="color: var(--color-text-muted); text-decoration: none; margin: 0 0.5rem;">Privacy</a>
+        <a href="#" style="color: var(--color-text-muted); text-decoration: none; margin: 0 0.5rem;">Terms</a>
+        <a href="#" style="color: var(--color-text-muted); text-decoration: none; margin: 0 0.5rem;">Contact</a>
+      </p>
+    </div>
+  </footer>
+  
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>

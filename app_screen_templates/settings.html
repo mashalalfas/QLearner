@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Quran App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <style>
+        :root {
+            /* Cotton Cloud - Material Design 3 Color Scheme */
+            --md-sys-color-primary: #6750A4;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #EADDFF;
+            --md-sys-color-on-primary-container: #21005D;
+            --md-sys-color-secondary: #625B71;
+            --md-sys-color-on-secondary: #FFFFFF;
+            --md-sys-color-secondary-container: #E8DEF8;
+            --md-sys-color-on-secondary-container: #1D192B;
+            --md-sys-color-tertiary: #7D5260;
+            --md-sys-color-on-tertiary: #FFFFFF;
+            --md-sys-color-tertiary-container: #FFD8E4;
+            --md-sys-color-on-tertiary-container: #31111D;
+            --md-sys-color-error: #BA1A1A;
+            --md-sys-color-on-error: #FFFFFF;
+            --md-sys-color-error-container: #FFDAD6;
+            --md-sys-color-on-error-container: #410002;
+            --md-sys-color-background: #FFFBFE;
+            --md-sys-color-on-background: #1C1B1F;
+            --md-sys-color-surface: #FFFBFE;
+            --md-sys-color-on-surface: #1C1B1F;
+            --md-sys-color-surface-variant: #E7E0EC;
+            --md-sys-color-on-surface-variant: #49454F;
+            --md-sys-color-outline: #79747E;
+            --md-sys-color-outline-variant: #CAC4D0;
+            --md-sys-color-scrim: #000000;
+            --md-sys-color-inverse-surface: #313033;
+            --md-sys-color-inverse-on-surface: #F4EFF4;
+            --md-sys-color-inverse-primary: #D0BCFF;
+
+            /* Light mode */
+            --bg-color: var(--md-sys-color-background);
+            --surface-color: var(--md-sys-color-surface);
+            --on-surface-color: var(--md-sys-color-on-surface);
+            --surface-variant: var(--md-sys-color-surface-variant);
+            --on-surface-variant: var(--md-sys-color-on-surface-variant);
+            --outline-color: var(--md-sys-color-outline);
+            --primary-color: var(--md-sys-color-primary);
+            --elevation-1: rgba(0, 0, 0, 0.05);
+            --elevation-2: rgba(0, 0, 0, 0.08);
+            --elevation-3: rgba(0, 0, 0, 0.11);
+            --elevation-4: rgba(0, 0, 0, 0.15);
+            --elevation-5: rgba(0, 0, 0, 0.20);
+        }
+
+        [data-theme="dark"] {
+            --md-sys-color-background: #1C1B1F;
+            --md-sys-color-on-background: #E6E1E5;
+            --md-sys-color-surface: #1C1B1F;
+            --md-sys-color-on-surface: #E6E1E5;
+            --md-sys-color-surface-variant: #49454F;
+            --md-sys-color-on-surface-variant: #CAC4D0;
+            --md-sys-color-outline: #938F99;
+            --md-sys-color-primary: #D0BCFF;
+            --md-sys-color-on-primary: #381E72;
+            --md-sys-color-primary-container: #4F378B;
+            --md-sys-color-on-primary-container: #EADDFF;
+            --elevation-1: rgba(255, 255, 255, 0.05);
+            --elevation-2: rgba(255, 255, 255, 0.08);
+            --elevation-3: rgba(255, 255, 255, 0.11);
+            --elevation-4: rgba(255, 255, 255, 0.15);
+            --elevation-5: rgba(255, 255, 255, 0.20);
+        }
+
+        [data-theme="system"] {
+            @media (prefers-color-scheme: dark) {
+                --md-sys-color-background: #1C1B1F;
+                --md-sys-color-on-background: #E6E1E5;
+                --md-sys-color-surface: #1C1B1F;
+                --md-sys-color-on-surface: #E6E1E5;
+                --md-sys-color-surface-variant: #49454F;
+                --md-sys-color-on-surface-variant: #CAC4D0;
+                --md-sys-color-outline: #938F99;
+                --md-sys-color-primary: #D0BCFF;
+                --md-sys-color-on-primary: #381E72;
+                --md-sys-color-primary-container: #4F378B;
+                --md-sys-color-on-primary-container: #EADDFF;
+                --elevation-1: rgba(255, 255, 255, 0.05);
+                --elevation-2: rgba(255, 255, 255, 0.08);
+                --elevation-3: rgba(255, 255, 255, 0.11);
+                --elevation-4: rgba(255, 255, 255, 0.15);
+                --elevation-5: rgba(255, 255, 255, 0.20);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--on-surface-color);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* AppBar */
+        .app-bar {
+            background-color: var(--surface-color);
+            color: var(--on-surface-color);
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px var(--elevation-2);
+        }
+
+        .app-bar .back-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--on-surface-color);
+            transition: background-color 0.2s;
+        }
+
+        .app-bar .back-button:hover {
+            background-color: var(--surface-variant);
+        }
+
+        .app-bar .back-button:active {
+            background-color: var(--elevation-2);
+        }
+
+        .app-bar .title {
+            font-size: 22px;
+            font-weight: 400;
+            margin-left: 8px;
+            flex: 1;
+        }
+
+        /* Main Content */
+        .settings-container {
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Settings Section */
+        .settings-section {
+            background-color: var(--surface-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 2px var(--elevation-1);
+        }
+
+        .section-header {
+            padding: 16px 16px 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--on-surface-variant);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .settings-list {
+            list-style: none;
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            min-height: 56px;
+            border-bottom: 1px solid var(--surface-variant);
+            transition: background-color 0.2s;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-item:active {
+            background-color: var(--elevation-1);
+        }
+
+        .settings-item .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            color: var(--on-surface-color);
+            background-color: var(--surface-variant);
+        }
+
+        .settings-item .icon .material-symbols-outlined {
+            font-size: 24px;
+        }
+
+        .settings-item .label {
+            flex: 1;
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .settings-item .value {
+            font-size: 14px;
+            color: var(--on-surface-variant);
+            margin-right: 8px;
+        }
+
+        /* Controls */
+        .dropdown, .select {
+            appearance: none;
+            background: transparent;
+            border: none;
+            color: var(--on-surface-variant);
+            font-size: 14px;
+            font-family: 'Roboto', sans-serif;
+            padding: 8px 32px 8px 0;
+            cursor: pointer;
+            min-width: 120px;
+            text-align: right;
+        }
+
+        .dropdown:focus, .select:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: 'expand_more';
+            font-family: 'Material Symbols Outlined';
+            font-size: 24px;
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--on-surface-variant);
+            pointer-events: none;
+        }
+
+        /* Slider */
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            width: 200px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--on-surface-variant);
+            margin-bottom: 8px;
+        }
+
+        .slider-value {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--surface-variant);
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: 2px solid var(--surface-color);
+            box-shadow: 0 1px 3px var(--elevation-3);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: 2px solid var(--surface-color);
+            box-shadow: 0 1px 3px var(--elevation-3);
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 52px;
+            height: 32px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--surface-variant);
+            border-radius: 34px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            height: 28px;
+            width: 28px;
+            left: 2px;
+            bottom: 2px;
+            background-color: var(--on-surface-variant);
+            border-radius: 50%;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--primary-color);
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(20px);
+            background-color: var(--on-primary);
+        }
+
+        .toggle-switch input:focus + .toggle-slider {
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background-color: var(--surface-variant);
+            margin: 0 16px;
+        }
+
+        /* Navigation Hint */
+        .nav-hint {
+            text-align: center;
+            padding: 24px 16px;
+            color: var(--on-surface-variant);
+            font-size: 14px;
+        }
+
+        .nav-hint code {
+            background-color: var(--surface-variant);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Roboto Mono', monospace;
+        }
+    </style>
+</head>
+<body>
+    <!-- AppBar -->
+    <header class="app-bar">
+        <button class="back-button" aria-label="Go back" onclick="navigateBack()">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 class="title">Settings</h1>
+    </header>
+
+    <!-- Main Content -->
+    <main class="settings-container">
+
+        <!-- Appearance Section -->
+        <section class="settings-section">
+            <div class="section-header">Appearance</div>
+            <ul class="settings-list">
+                <li class="settings-item">
+                    <div class="icon">
+                        <span class="material-symbols-outlined">palette</span>
+                    </div>
+                    <span class="label">Theme</span>
+                    <div class="select-wrapper">
+                        <select class="dropdown" id="theme-select" onchange="updateSetting('theme', this.value)">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="system">System</option>
+                        </select>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Reciter Section -->
+        <section class="settings-section">
+            <div class="section-header">Recitation</div>
+            <ul class="settings-list">
+                <li class="settings-item">
+                    <div class="icon">
+                        <span class="material-symbols-outlined">record_voice_over</span>
+                    </div>
+                    <span class="label">Reciter</span>
+                    <div class="select-wrapper">
+                        <select class="dropdown" id="reciter-select" onchange="updateSetting('reciter', this.value)">
+                            <option value="mishary">Mishary Rashid Alafasy</option>
+                            <option value="abdul">Abdul Basit</option>
+                            <option value="sudais">Abdul Rahman Al-Sudais</option>
+                            <option value="shuraim">Saad Al-Ghamdi</option>
+                            <option value="husary">Mahmoud Khalil Al-Husary</option>
+                            <option value="minshawi">Mohamed Siddiq Al-Minshawi</option>
+                        </select>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Display Section -->
+        <section class="settings-section">
+            <div class="section-header">Display</div>
+            <ul class="settings-list">
+                <li class="settings-item">
+                    <div class="icon">
+                        <span class="material-symbols-outlined">format_size</span>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="label">Arabic Font Size</div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span id="arabic-size-label">Small</span>
+                                <span class="slider-value" id="arabic-size-value">24px</span>
+                            </div>
+                            <input type="range" id="arabic-font-size" min="16" max="48" value="24" oninput="updateSlider('arabic', this.value)" onchange="updateSetting('arabicFontSize', this.value)">
+                        </div>
+                    </div>
+                </li>
+                <div class="divider"></div>
+                <li class="settings-item">
+                    <div class="icon">
+                        <span class="material-symbols-outlined">text_fields</span>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="label">Translation Font Size</div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span id="translation-size-label">Small</span>
+                                <span class="slider-value" id="translation-size-value">14px</span>
+                            </div>
+                            <input type="range" id="translation-font-size" min="12" max="24" value="14" oninput="updateSlider('translation', this.value)" onchange="updateSetting('translationFontSize', this.value)">
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Playback Section -->
+        <section class="settings-section">
+            <div class="section-header">Playback</div>
+            <ul class="settings-list">
+                <li class="settings-item">
+                    <div class="icon">
+                        <span class="material-symbols-outlined">skip_next</span>
+                    </div>
+                    <span class="label">Auto-play next</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoplay-toggle" onchange="updateSetting('autoPlay', this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Downloads Section -->
+        <section class="settings-section">
+            <div class="section-header">Downloads</div>
+            <ul class="settings-list">
+                <li class="settings-item">
+                    <div class="icon">
+                        <span class="material-symbols-outlined">wifi</span>
+                    </div>
+                    <span class="label">Auto-download on WiFi</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="wifi-download-toggle" onchange="updateSetting('autoDownloadWiFi', this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Notifications Section -->
+        <section class="settings-section">
+            <div class="section-header">Notifications</div>
+            <ul class="settings-list">
+                <li class="settings-item">
+                    <div class="icon">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </div>
+                    <span class="label">Enable notifications</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="notifications-toggle" onchange="updateSetting('notifications', this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </li>
+            </ul>
+        </section>
+
+        <!-- About Section -->
+        <section class="settings-section">
+            <div class="section-header">About</div>
+            <ul class="settings-list">
+                <li class="settings-item" onclick="handleAbout()">
+                    <div class="icon">
+                        <span class="material-symbols-outlined">info</span>
+                    </div>
+                    <span class="label">About</span>
+                    <span class="material-symbols-outlined" style="color: var(--on-surface-variant);">chevron_right</span>
+                </li>
+                <div class="divider"></div>
+                <li class="settings-item" onclick="handlePrivacy()">
+                    <div class="icon">
+                        <span class="material-symbols-outlined">privacy_tip</span>
+                    </div>
+                    <span class="label">Privacy Policy</span>
+                    <span class="material-symbols-outlined" style="color: var(--on-surface-variant);">chevron_right</span>
+                </li>
+            </ul>
+        </section>
+
+        <div class="nav-hint">
+            <p>Linked from bottom navigation: <code>#settings</code></p>
+        </div>
+    </main>
+
+    <script>
+        // localStorage keys
+        const STORAGE_KEYS = {
+            THEME: 'quran_app_theme',
+            RECITER: 'quran_app_reciter',
+            ARABIC_FONT_SIZE: 'quran_app_arabic_font_size',
+            TRANSLATION_FONT_SIZE: 'quran_app_translation_font_size',
+            AUTO_PLAY: 'quran_app_auto_play',
+            AUTO_DOWNLOAD_WIFI: 'quran_app_auto_download_wifi',
+            NOTIFICATIONS: 'quran_app_notifications'
+        };
+
+        // Initialize settings from localStorage
+        function initSettings() {
+            // Theme
+            const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || 'light';
+            document.getElementById('theme-select').value = savedTheme;
+            applyTheme(savedTheme);
+
+            // Reciter
+            const savedReciter = localStorage.getItem(STORAGE_KEYS.RECITER) || 'mishary';
+            document.getElementById('reciter-select').value = savedReciter;
+
+            // Arabic font size
+            const savedArabicSize = localStorage.getItem(STORAGE_KEYS.ARABIC_FONT_SIZE) || '24';
+            document.getElementById('arabic-font-size').value = savedArabicSize;
+            updateSlider('arabic', savedArabicSize);
+
+            // Translation font size
+            const savedTranslationSize = localStorage.getItem(STORAGE_KEYS.TRANSLATION_FONT_SIZE) || '14';
+            document.getElementById('translation-font-size').value = savedTranslationSize;
+            updateSlider('translation', savedTranslationSize);
+
+            // Auto-play toggle
+            const savedAutoPlay = localStorage.getItem(STORAGE_KEYS.AUTO_PLAY) === 'true';
+            document.getElementById('autoplay-toggle').checked = savedAutoPlay;
+
+            // Auto-download on WiFi toggle
+            const savedAutoDownload = localStorage.getItem(STORAGE_KEYS.AUTO_DOWNLOAD_WIFI) === 'true';
+            document.getElementById('wifi-download-toggle').checked = savedAutoDownload;
+
+            // Notifications toggle
+            const savedNotifications = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS) === 'true';
+            document.getElementById('notifications-toggle').checked = savedNotifications;
+        }
+
+        // Apply theme
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem(STORAGE_KEYS.THEME, theme);
+        }
+
+        // Update setting and persist to localStorage
+        function updateSetting(key, value) {
+            const storageKey = Object.values(STORAGE_KEYS).find(k => k.endsWith(key));
+            if (storageKey) {
+                localStorage.setItem(storageKey, value);
+            }
+
+            // Special handling for theme
+            if (key === 'theme') {
+                applyTheme(value);
+            }
+        }
+
+        // Update slider display
+        function updateSlider(type, value) {
+            const valueDisplay = document.getElementById(`${type}-size-value`);
+            const labelDisplay = document.getElementById(`${type}-size-label`);
+
+            valueDisplay.textContent = `${value}px`;
+
+            // Update label based on value
+            let label = 'Small';
+            if (type === 'arabic') {
+                if (value <= 18) label = 'Small';
+                else if (value <= 28) label = 'Medium';
+                else label = 'Large';
+            } else {
+                if (value <= 14) label = 'Small';
+                else if (value <= 18) label = 'Medium';
+                else label = 'Large';
+            }
+            labelDisplay.textContent = label;
+        }
+
+        // Navigation
+        function navigateBack() {
+            // In a real app, this would navigate back in the router
+            console.log('Navigate back');
+            // For demo: show alert
+            alert('Back navigation - would return to previous screen');
+        }
+
+        function handleAbout() {
+            console.log('Open About');
+            alert('Quran App v1.0.0\n\nA beautiful Quran reading and listening experience.\nBuilt with ❤️ for the Muslim community.');
+        }
+
+        function handlePrivacy() {
+            console.log('Open Privacy Policy');
+            alert('Privacy Policy\n\nWe respect your privacy. Your settings are stored locally on your device and are never transmitted to our servers.');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initSettings);
+    </script>
+</body>
+</html>

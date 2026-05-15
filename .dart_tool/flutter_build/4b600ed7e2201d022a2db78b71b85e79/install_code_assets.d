@@ -1,0 +1,1 @@
+ /home/max/Development/Taurus/qlearner/.dart_tool/flutter_build/4b600ed7e2201d022a2db78b71b85e79/native_assets.json: 

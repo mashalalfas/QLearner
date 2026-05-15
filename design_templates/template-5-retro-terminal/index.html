@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QLearner Terminal v2.1 - Quran Learning System</title>
+    <style>
+        /* CSS Custom Properties */
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #000000;
+            --text-primary: #00ff00;
+            --text-secondary: #ffb000;
+            --text-dim: #00cc00;
+            --border-color: #00ff00;
+            --scanline-opacity: 0.08;
+            --font-mono: 'Courier New', 'Fira Code', 'Consolas', monospace;
+        }
+
+        /* Reset & Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* CRT Scanline Overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 0, var(--scanline-opacity)) 2px,
+                rgba(0, 255, 0, var(--scanline-opacity)) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            animation: scanline-flicker 0.1s infinite;
+        }
+
+        /* CRT Flicker Effect */
+        @keyframes scanline-flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.95; }
+        }
+
+        /* Screen Glow */
+        .screen-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 0%,
+                rgba(0, 255, 0, 0.05) 80%,
+                rgba(0, 255, 0, 0.1) 100%
+            );
+            pointer-events: none;
+            z-index: 9998;
+            animation: glow-pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.9; }
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-secondary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px var(--text-secondary);
+        }
+
+        h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); }
+        h2 { font-size: clamp(1.25rem, 4vw, 2rem); }
+        h3 { font-size: clamp(1.1rem, 3.5vw, 1.5rem); }
+
+        p, li, a, span, code {
+            font-size: clamp(0.875rem, 2vw, 1rem);
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header / Navigation */
+        header {
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--border-color);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-secondary);
+            text-shadow: 0 0 10px var(--text-secondary);
+            text-decoration: none;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--text-primary);
+            text-decoration: none;
+            border: 1px solid transparent;
+            padding: 0.25rem 0.5rem;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        nav a:hover,
+        nav a:focus {
+            border-color: var(--border-color);
+            background: rgba(0, 255, 0, 0.1);
+            outline: none;
+            box-shadow: 0 0 5px var(--text-primary);
+        }
+
+        nav a:focus-visible {
+            outline: 2px solid var(--text-secondary);
+            outline-offset: 2px;
+        }
+
+        /* Hero Section with Typewriter */
+        .hero {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem 1rem;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .boot-sequence {
+            font-size: 0.875rem;
+            text-align: left;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px dashed var(--border-color);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .boot-line {
+            display: block;
+            opacity: 0;
+            animation: fadeIn 0.1s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .typewriter-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2em;
+            background: var(--text-primary);
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .hero-title {
+            margin-top: 2rem;
+            font-size: clamp(2rem, 8vw, 4rem);
+            text-shadow: 0 0 20px var(--text-secondary);
+            animation: glitch 3s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translate(0); }
+            92% { transform: translate(-2px, 1px); }
+            94% { transform: translate(2px, -1px); }
+            96% { transform: translate(-1px, 0); }
+        }
+
+        .hero-subtitle {
+            color: var(--text-primary);
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            margin-top: 1rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 1rem 2rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button:hover,
+        .cta-button:focus {
+            background: var(--text-primary);
+            color: var(--bg-secondary);
+            box-shadow: 0 0 20px var(--text-primary);
+            outline: none;
+        }
+
+        .cta-button:focus-visible {
+            outline: 2px solid var(--text-secondary);
+            outline-offset: 2px;
+        }
+
+        /* Command Line Interface Section */
+        .cli-section {
+            padding: 4rem 1rem;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .terminal-window {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            max-width: 900px;
+            margin: 0 auto;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
+        }
+
+        .terminal-header {
+            background: linear-gradient(180deg, #333 0%, #111 100%);
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terminal-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+        }
+
+        .terminal-button.close { background: #ff5f56; }
+        .terminal-button.minimize { background: #ffbd2e; }
+        .terminal-button.maximize { background: #27c93f; }
+
+        .terminal-title {
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        .terminal-body {
+            padding: 1.5rem;
+            min-height: 400px;
+            font-size: 0.875rem;
+        }
+
+        .cli-command {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+
+        .cli-prompt {
+            color: var(--text-secondary);
+            margin-right: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .cli-input {
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .cli-output {
+            color: var(--text-dim);
+            margin-left: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ASCII File Grid Section */
+        .files-section {
+            padding: 4rem 1rem;
+        }
+
+        .ascii-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .ascii-box {
+            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .ascii-box::before {
+            content: "+";
+            position: absolute;
+            top: -0.75rem;
+            left: -0.75rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--text-secondary);
+        }
+
+        .ascii-box:hover,
+        .ascii-box:focus-within {
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .ascii-title {
+            color: var(--text-secondary);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        .ascii-content {
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .ascii-meta {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            margin-top: 1rem;
+            padding-top: 0.5rem;
+            border-top: 1px dotted var(--border-color);
+        }
+
+        /* System Status Footer */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 2px solid var(--border-color);
+            padding: 2rem 1rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .status-group {
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .status-header {
+            color: var(--text-secondary);
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.1em;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .status-label {
+            color: var(--text-dim);
+        }
+
+        .status-value {
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.online {
+            background: #00ff00;
+        }
+
+        .status-indicator.warning {
+            background: var(--text-secondary);
+        }
+
+        .status-indicator.offline {
+            background: #ff0000;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .copyright {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border-color);
+            color: var(--text-dim);
+            font-size: 0.75rem;
+        }
+
+        /* Utility Classes */
+        .text-dim { color: var(--text-dim); }
+        .text-accent { color: var(--text-secondary); }
+        .blink { animation: blink 1s step-end infinite; }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 0 1.5rem;
+            }
+
+            .ascii-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1.25rem;
+            }
+
+            .terminal-body {
+                min-height: 350px;
+                padding: 1.25rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            nav ul {
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .hero {
+                min-height: 70vh;
+                padding: 1rem;
+            }
+
+            .boot-sequence {
+                font-size: 0.75rem;
+                padding: 0.75rem;
+            }
+
+            .terminal-body {
+                min-height: 300px;
+                padding: 1rem;
+                font-size: 0.75rem;
+            }
+
+            .ascii-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .cta-button {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Accessibility */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 8px;
+            z-index: 1000;
+            border: 1px solid var(--border-color);
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* High Contrast Mode Support */
+        @media (prefers-contrast: high) {
+            :root {
+                --text-primary: #00ff00;
+                --border-color: #00ff00;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <div class="screen-glow"></div>
+
+    <!-- Header Navigation -->
+    <header role="banner">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo" aria-label="QLearner Terminal Home">
+                    QLearner<span class="text-dim">_v2.1</span>
+                </a>
+                <nav role="navigation" aria-label="Main navigation">
+                    <ul>
+                        <li><a href="#modules">MODULES</a></li>
+                        <li><a href="#progress">PROGRESS</a></li>
+                        <li><a href="#quran">QURAN</a></li>
+                        <li><a href="#about">ABOUT</a></li>
+                        <li><a href="#login">LOGIN</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content" role="main">
+        <!-- Hero Section -->
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="container">
+                <div class="hero-content">
+                    <!-- Boot Sequence -->
+                    <div class="boot-sequence" id="boot-sequence" aria-live="polite">
+                        <span class="boot-line">Initializing QLearner Terminal v2.1...</span>
+                        <span class="boot-line">Loading Quran Learning Module...</span>
+                        <span class="boot-line">Mounting virtual drive Q:</span>
+                        <span class="boot-line">Checking memory... 640K OK</span>
+                        <span class="boot-line">Loading Arabic text renderer...</span>
+                        <span class="boot-line">Activating Tajweed analyzer...</span>
+                        <span class="boot-line">System ready. Welcome, seeker of knowledge.</span>
+                    </div>
+
+                    <!-- Main Hero Content -->
+                    <h1 id="hero-title" class="hero-title">
+                        QLEARNER <span class="text-dim">TERMINAL</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        [ Interactive Quran Learning System v2.1 ]
+                    </p>
+                    <p class="text-dim" style="margin-top: 1rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+                        Master the Holy Quran through interactive modules, real-time recitation analysis, and adaptive learning paths.
+                        Type <code style="color: var(--text-secondary);">HELP</code> to begin.
+                    </p>
+
+                    <a href="#modules" class="cta-button" role="button">
+                        [ ENTER SYSTEM ]
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- CLI Interface Mockup -->
+        <section class="cli-section" id="modules" aria-labelledby="cli-title">
+            <div class="container">
+                <h2 id="cli-title" class="section-title">
+                    :: Command Interface ::
+                </h2>
+
+                <div class="terminal-window" role="region" aria-label="Command line interface demonstration">
+                    <div class="terminal-header">
+                        <button class="terminal-button close" aria-label="Close terminal"></button>
+                        <button class="terminal-button minimize" aria-label="Minimize terminal"></button>
+                        <button class="terminal-button maximize" aria-label="Maximize terminal"></button>
+                        <span class="terminal-title">qlearner@terminal:~</span>
+                    </div>
+                    <div class="terminal-body" id="terminal-body">
+                        <div class="cli-output">
+                            Last login: <span id="login-time"></span> from <span class="text-accent">localhost</span><br>
+                            QLearner Terminal v2.1 (GNU/Terminal)<br>
+                            Type 'help' for available commands.<br>
+                            <br>
+                        </div>
+
+                        <div class="cli-command">
+                            <span class="cli-prompt">user@qlearner:~$</span>
+                            <span class="cli-input" id="command-line"></span><span class="typewriter-cursor"></span>
+                        </div>
+
+                        <div class="cli-output" id="command-output" aria-live="polite">
+                            <!-- Output appears here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ASCII File/Module Grid -->
+        <section class="files-section" id="progress" aria-labelledby="files-title">
+            <div class="container">
+                <h2 id="files-title" class="section-title">
+                    :: Learning Modules ::
+                </h2>
+
+                <div class="ascii-grid">
+                    <div class="ascii-box" tabindex="0" role="article" aria-label="Quran Recitation Module">
+                        <div class="ascii-title">[ MODULE_01 ]</div>
+                        <div class="ascii-content">
+                            > Name: Quran Recitation<br>
+                            > Status: <span class="text-accent">ACTIVE</span><br>
+                            > Lessons: 114 Surahs<br>
+                            > Progress: <span class="text-dim">██████████░░</span> 67%<br>
+                            > Audio analysis: <span class="text-accent">ENABLED</span>
+                        </div>
+                        <div class="ascii-meta">
+                            Access: READ/WRITE | Size: 2.4GB
+                        </div>
+                    </div>
+
+                    <div class="ascii-box" tabindex="0" role="article" aria-label="Tajweed Rules Module">
+                        <div class="ascii-title">[ MODULE_02 ]</div>
+                        <div class="ascii-content">
+                            > Name: Tajweed Rules<br>
+                            > Status: <span class="text-accent">STANDBY</span><br>
+                            > Rules: 72 Manuals<br>
+                            > Progress: <span class="text-dim">█████░░░░░░░</span> 34%<br>
+                            > Pronunciation check: <span class="text-accent">ACTIVE</span>
+                        </div>
+                        <div class="ascii-meta">
+                            Access: READ ONLY | Size: 890MB
+                        </div>
+                    </div>
+
+                    <div class="ascii-box" tabindex="0" role="article" aria-label="Arabic Typing Module">
+                        <div class="ascii-title">[ MODULE_03 ]</div>
+                        <div class="ascii-content">
+                            > Name: Arabic Typing<br>
+                            > Status: <span class="text-accent">MAINTENANCE</span><br>
+                            > Exercises: 450 Tasks<br>
+                            > Progress: <span class="text-dim">████████░░░░</span> 58%<br>
+                            > Keyboard layout: <span class="text-accent">ARABIC_102</span>
+                        </div>
+                        <div class="ascii-meta">
+                            Access: RESTRICTED | Size: 120MB
+                        </div>
+                    </div>
+
+                    <div class="ascii-box" tabindex="0" role="article" aria-label="Memorization Tracker">
+                        <div class="ascii-title">[ MODULE_04 ]</div>
+                        <div class="ascii-content">
+                            > Name: Hifz Tracker<br>
+                            > Status: <span class="text-accent">ONLINE</span><br>
+                            > Verses memorized: 328/6236<br>
+                            > Progress: <span class="text-dim">███░░░░░░░░░</span> 5%<br>
+                            > Daily target: <span class="text-accent">5 verses</span>
+                        </div>
+                        <div class="ascii-meta">
+                            Access: USER | Size: 45MB
+                        </div>
+                    </div>
+
+                    <div class="ascii-box" tabindex="0" role="article" aria-label="Translation Module">
+                        <div class="ascii-title">[ MODULE_05 ]</div>
+                        <div class="ascii-content">
+                            > Name: Tafsir Explorer<br>
+                            > Status: <span class="text-accent">DOWNLOADING</span><br>
+                            > Sources: 45 Commentaries<br>
+                            > Progress: <span class="text-dim">█████████████</span> 92%<br>
+                            > Languages: <span class="text-accent">AR/EN/UR</span>
+                        </div>
+                        <div class="ascii-meta">
+                            Access: SYNCING | Size: 1.2GB
+                        </div>
+                    </div>
+
+                    <div class="ascii-box" tabindex="0" role="article" aria-label="Community Hub">
+                        <div class="ascii-title">[ MODULE_06 ]</div>
+                        <div class="ascii-content">
+                            > Name: Community Hub<br>
+                            > Status: <span class="text-accent">CONNECTED</span><br>
+                            > Users online: 2,847<br>
+                            > Sessions: <span class="text-dim">███████░░░░░</span> 48%<br>
+                            > Chat rooms: <span class="text-accent">12 ACTIVE</span>
+                        </div>
+                        <div class="ascii-meta">
+                            Access: PUBLIC | Size: 230MB
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer with System Status -->
+    <footer id="about" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="status-group">
+                    <div class="status-header">
+                        <span class="status-indicator online"></span>SYSTEM STATUS
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">CPU Usage:</span>
+                        <span class="status-value" id="cpu-status">12%</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Memory:</span>
+                        <span class="status-value" id="mem-status">1.2GB / 4GB</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Uptime:</span>
+                        <span class="status-value" id="uptime-status">14d 03h 22m</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Processes:</span>
+                        <span class="status-value" id="process-status">142</span>
+                    </div>
+                </div>
+
+                <div class="status-group">
+                    <div class="status-header">
+                        <span class="status-indicator online"></span>NETWORK
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Connection:</span>
+                        <span class="status-value">100 Mbps</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Latency:</span>
+                        <span class="status-value">24 ms</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Data IN:</span>
+                        <span class="status-value">1.2 GB</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Data OUT:</span>
+                        <span class="status-value">0.8 GB</span>
+                    </div>
+                </div>
+
+                <div class="status-group">
+                    <div class="status-header">
+                        <span class="status-indicator warning"></span>MODULES
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Active:</span>
+                        <span class="status-value">6</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Standby:</span>
+                        <span class="status-value">2</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Errors:</span>
+                        <span class="status-value">0</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Version:</span>
+                        <span class="status-value">v2.1.0</span>
+                    </div>
+                </div>
+
+                <div class="status-group">
+                    <div class="status-header">
+                        <span class="status-indicator online"></span>LEARNING
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Users:</span>
+                        <span class="status-value">24,592</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Sessions:</span>
+                        <span class="status-value">1,248</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Lessons:</span>
+                        <span class="status-value">12,456</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Avg. Score:</span>
+                        <span class="status-value">87%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="copyright">
+                <p>© 2026 QLearner Systems | Terminal Interface v2.1 | Built with <span class="text-accent">♥</span> for Quran education</p>
+                <p style="margin-top: 0.5rem;">
+                    <span class="text-dim">"Indeed, we will not be deterred."</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Boot Sequence Typewriter Effect
+        document.addEventListener('DOMContentLoaded', function() {
+            const bootSequence = document.getElementById('boot-sequence');
+            const bootLines = bootSequence.querySelectorAll('.boot-line');
+            let delay = 0;
+
+            // Hide all lines initially
+            bootLines.forEach(line => {
+                line.style.opacity = '0';
+            });
+
+            // Animate lines one by one
+            bootLines.forEach((line, index) => {
+                setTimeout(() => {
+                    line.style.opacity = '1';
+                    line.style.animation = 'fadeIn 0.3s forwards';
+                }, delay);
+                delay += 400; // 400ms between lines
+            });
+
+            // Set login time
+            const now = new Date();
+            const loginTimeStr = now.toLocaleString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('login-time').textContent = loginTimeStr;
+
+            // CLI Typing Simulation
+            const commands = [
+                { input: 'help', output: 'Available commands:\n  status  - Show system status\n  modules - List learning modules\n  progress - Show your progress\n  quran   - Access Quran browser\n  tajweed - Tajweed rules reference\n  exit    - Close terminal' },
+                { input: 'status', output: 'System Status: ONLINE\nCPU: 12% | MEM: 1.2GB\nUptime: 14d 03h 22m\nNetwork: 100 Mbps (24ms)\nAll modules operational.' },
+                { input: 'modules', output: 'Loaded Modules:\n  1. Quran Recitation [ACTIVE]\n  2. Tajweed Rules [STANDBY]\n  3. Arabic Typing [MAINTENANCE]\n  4. Hifz Tracker [ONLINE]\n  5. Tafsir Explorer [92%]\n  6. Community Hub [CONNECTED]' },
+                { input: 'progress', output: 'Your Learning Progress:\n  Surahs completed: 24/114\n  Verses memorized: 328\n  Average accuracy: 87%\n  Study time: 142 hours\n  Rank: Advanced Learner' },
+                { input: 'quran', output: 'Opening Quran Browser...\nSelect Surah (1-114) or type "search [keyword]":\n> Type "surah 1" to begin with Al-Fatihah' },
+                { input: 'tajweed', output: 'Tajweed Rules Database:\n  72 rules loaded\n  Active analysis: Makharij, Sifat, Ahkam\n  Pronunciation accuracy: 94%\n  Recommend: Practice rule #12 (Idgham)' }
+            ];
+
+            let commandIndex = 0;
+            const commandLine = document.getElementById('command-line');
+            const commandOutput = document.getElementById('command-output');
+
+            function typeCommand(text, callback) {
+                let charIndex = 0;
+                commandLine.textContent = '';
+
+                function typeChar() {
+                    if (charIndex < text.length) {
+                        commandLine.textContent += text.charAt(charIndex);
+                        charIndex++;
+                        setTimeout(typeChar, 50 + Math.random() * 50);
+                    } else if (callback) {
+                        callback();
+                    }
+                }
+                typeChar();
+            }
+
+            function showOutput(output) {
+                const outputDiv = document.createElement('div');
+                outputDiv.className = 'cli-output';
+                outputDiv.style.whiteSpace = 'pre-wrap';
+                outputDiv.textContent = output;
+                commandOutput.appendChild(outputDiv);
+            }
+
+            function runCommandSequence() {
+                if (commandIndex >= commands.length) {
+                    // Loop back to first command after a pause
+                    setTimeout(() => {
+                        commandIndex = 0;
+                        runCommandSequence();
+                    }, 5000);
+                    return;
+                }
+
+                const cmd = commands[commandIndex];
+                typeCommand(cmd.input, () => {
+                    setTimeout(() => {
+                        showOutput(cmd.output);
+                        commandIndex++;
+                        runCommandSequence();
+                    }, 300);
+                });
+            }
+
+            // Start typing after initial boot sequence
+            setTimeout(() => {
+                runCommandSequence();
+            }, delay + 1000);
+        });
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Keyboard accessibility for ASCII boxes
+        document.querySelectorAll('.ascii-box').forEach(box => {
+            box.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
+            });
+
+            box.addEventListener('click', function() {
+                // Visual feedback
+                this.style.borderColor = '#ffb000';
+                setTimeout(() => {
+                    this.style.borderColor = '';
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>

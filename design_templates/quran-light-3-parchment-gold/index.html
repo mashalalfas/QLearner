@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Noor - A beautiful Quran streaming app with 114 Surahs, 40+ reciters, night mode, and bookmarks. Experience the Quran in stunning clarity.">
+    <title>Noor - Quran Streaming App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --parchment-bg: #F5F0E6;
+            --parchment-light: #FFFDD0;
+            --gold-primary: #D4AF37;
+            --gold-accent: #C5A028;
+            --gold-light: #E8D48A;
+            --gold-fade: rgba(212, 175, 55, 0.15);
+            --text-dark: #3E2723;
+            --text-medium: #5D4037;
+            --text-light: #8D6E63;
+            --shadow-warm: rgba(62, 39, 35, 0.08);
+            --shadow-deep: rgba(62, 39, 35, 0.15);
+            --border-gold: #D4AF37;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--parchment-bg);
+            color: var(--text-dark);
+            line-height: 1.7;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Parchment texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139, 69, 19, 0.02) 2px, rgba(139, 69, 19, 0.02) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(139, 69, 19, 0.02) 2px, rgba(139, 69, 19, 0.02) 4px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: linear-gradient(180deg, rgba(245, 240, 230, 0.98) 0%, rgba(245, 240, 230, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--gold-fade);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .nav-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Amiri', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--gold-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            fill: var(--gold-primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-medium);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--gold-primary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gold-primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-cta {
+            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-accent) 100%);
+            color: white !important;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600 !important;
+        }
+
+        .nav-cta::after {
+            display: none !important;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .mobile-menu-btn span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--text-dark);
+            margin: 5px 0;
+            transition: 0.3s;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 10rem 0 6rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--gold-fade) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .arabic-heading {
+            font-family: 'Amiri', serif;
+            font-size: clamp(3.5rem, 10vw, 6rem);
+            color: var(--gold-primary);
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px var(--shadow-warm);
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            color: var(--text-medium);
+            font-weight: 400;
+            font-style: italic;
+            margin-bottom: 2rem;
+            letter-spacing: 0.05em;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            line-height: 1.8;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-accent) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-dark);
+            border-color: var(--gold-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gold-fade);
+            transform: translateY(-2px);
+        }
+
+        .btn-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Geometric Divider */
+        .divider {
+            height: 40px;
+            margin: 4rem 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            height: 2px;
+            width: 35%;
+            background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .divider-pattern {
+            width: 60px;
+            height: 60px;
+            position: relative;
+        }
+
+        .divider-pattern::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--gold-primary);
+            border-radius: 50%;
+        }
+
+        .divider-pattern::after {
+            content: '✦';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--gold-primary);
+            font-size: 1.2rem;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 4rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            color: var(--text-dark);
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(245, 240, 230, 0.9));
+            border: 1px solid var(--gold-fade);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold-primary), var(--gold-accent));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px var(--shadow-warm);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.5rem;
+            background: var(--gold-fade);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feature-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--gold-primary);
+        }
+
+        .feature-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-description {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .feature-stat {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.3rem 0.8rem;
+            background: var(--gold-fade);
+            color: var(--gold-accent);
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-radius: 20px;
+        }
+
+        /* Verse Spotlight */
+        .verse-spotlight {
+            padding: 5rem 0;
+            background: linear-gradient(180deg, transparent 0%, var(--gold-fade) 50%, transparent 100%);
+        }
+
+        .verse-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(245, 240, 230, 0.95));
+            border: 2px solid var(--gold-primary);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 20px 60px var(--shadow-warm);
+        }
+
+        .verse-card::before,
+        .verse-card::after {
+            content: '❝';
+            position: absolute;
+            font-size: 4rem;
+            color: var(--gold-fade);
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .verse-card::before {
+            top: 1rem;
+            left: 1.5rem;
+        }
+
+        .verse-card::after {
+            content: '❞';
+            bottom: 1rem;
+            right: 1.5rem;
+        }
+
+        .verse-arabic {
+            font-family: 'Amiri', serif;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            color: var(--text-dark);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            direction: rtl;
+        }
+
+        .verse-translation {
+            font-size: 1.1rem;
+            color: var(--text-medium);
+            font-style: italic;
+            line-height: 1.8;
+        }
+
+        .verse-reference {
+            margin-top: 2rem;
+            color: var(--gold-primary);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* App Preview */
+        .app-preview {
+            padding: 5rem 0;
+        }
+
+        .preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4rem;
+            flex-wrap: wrap;
+        }
+
+        .phone-mockup {
+            width: 280px;
+            height: 580px;
+            background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 30px 60px var(--shadow-deep);
+            position: relative;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: var(--parchment-bg);
+            border-radius: 28px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .phone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 28px;
+            background: #1a1a1a;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+
+        .phone-content {
+            padding: 3rem 1rem 1rem;
+            text-align: center;
+        }
+
+        .app-logo {
+            font-family: 'Amiri', serif;
+            font-size: 2rem;
+            color: var(--gold-primary);
+            margin-bottom: 2rem;
+        }
+
+        .surah-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--gold-primary);
+        }
+
+        .surah-number {
+            width: 32px;
+            height: 32px;
+            background: var(--gold-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .surah-name {
+            flex: 1;
+            text-align: center;
+            font-family: 'Amiri', serif;
+            font-size: 1.2rem;
+            color: var(--text-dark);
+        }
+
+        .surah-ayat {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .preview-text {
+            max-width: 400px;
+        }
+
+        .preview-text h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-text p {
+            color: var(--text-medium);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-features {
+            list-style: none;
+        }
+
+        .preview-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: var(--text-medium);
+        }
+
+        .preview-features li::before {
+            content: '✓';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: var(--gold-fade);
+            color: var(--gold-primary);
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* Download Section */
+        .download {
+            padding: 5rem 0;
+            text-align: center;
+            background: linear-gradient(180deg, transparent 0%, var(--gold-fade) 100%);
+        }
+
+        .download-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .download-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .download-subtitle {
+            color: var(--text-medium);
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+        }
+
+        .download-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .store-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: #1a1a1a;
+            color: white;
+            padding: 1rem 1.75rem;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            min-width: 180px;
+        }
+
+        .store-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .store-icon {
+            width: 32px;
+            height: 32px;
+        }
+
+        .store-text {
+            text-align: left;
+        }
+
+        .store-label {
+            display: block;
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .store-name {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem 0;
+            text-align: center;
+            border-top: 1px solid var(--gold-fade);
+            background: rgba(245, 240, 230, 0.5);
+        }
+
+        .footer-logo {
+            font-family: 'Amiri', serif;
+            font-size: 1.8rem;
+            color: var(--gold-primary);
+            margin-bottom: 1rem;
+        }
+
+        .footer-text {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .footer-text a {
+            color: var(--gold-primary);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--parchment-bg);
+                flex-direction: column;
+                padding: 1.5rem;
+                border-bottom: 1px solid var(--gold-fade);
+                box-shadow: 0 4px 20px var(--shadow-warm);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero {
+                padding: 8rem 0 4rem;
+            }
+
+            .preview-container {
+                gap: 2rem;
+            }
+
+            .phone-mockup {
+                width: 240px;
+                height: 500px;
+            }
+
+            .verse-card {
+                padding: 2rem 1.5rem;
+            }
+        }
+
+        /* Night mode indicator (visible only in night mode via JS) */
+        .night-mode-indicator {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--gold-primary);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .night-mode-indicator.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .feature-card:nth-child(2) {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .feature-card:nth-child(3) {
+            animation: float 4s ease-in-out 1s infinite;
+        }
+
+        .feature-card:nth-child(4) {
+            animation: float 4s ease-in-out 2s infinite;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="container nav-inner">
+            <a href="#" class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2L15 8H9L12 2Z" fill="currentColor"/>
+                    <path d="M12 22C9 18 3 15 3 9C3 4.5 6.5 1 12 1C17.5 1 21 4.5 21 9C21 15 15 18 12 22Z" fill="currentColor"/>
+                </svg>
+                Noor
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#verse">Verse</a></li>
+                <li><a href="#preview">Preview</a></li>
+                <li><a href="#download" class="nav-cta">Download</a></li>
+            </ul>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-content">
+            <h1 class="arabic-heading">نور</h1>
+            <p class="hero-subtitle">Illuminating the Path Through the Quran</p>
+            <p class="hero-description">
+                Experience the divine words with crystal-clear audio, beautiful typography, and serene design.
+                Your journey to spiritual enlightenment begins here.
+            </p>
+            <div class="cta-buttons">
+                <a href="#download" class="btn btn-primary">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                    </svg>
+                    Download Free
+                </a>
+                <a href="#preview" class="btn btn-secondary">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    See Preview
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="divider">
+        <div class="divider-pattern"></div>
+    </div>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">Divine Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">All 114 Surahs</h3>
+                    <p class="feature-description">
+                        Complete Quran with every Surah beautifully typeset in Arabic script with translations in multiple languages.
+                    </p>
+                    <span class="feature-stat">114 Chapters</span>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">40+ Reciters</h3>
+                    <p class="feature-description">
+                        Choose from world-renowned reciters with multiple recitation styles and high-fidelity audio.
+                    </p>
+                    <span class="feature-stat">High Quality Audio</span>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.29 1.29c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.29 1.29c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.29-1.29zm1.41-13.78c-.39-.39-1.02-.39-1.41 0l-1.29 1.29c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.29-1.29c.39-.39.39-1.02 0-1.41zM7.28 17.65c-.39-.39-1.02-.39-1.41 0l-1.29 1.29c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.29-1.29c.39-.39.39-1.02 0-1.41z"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Night Mode</h3>
+                    <p class="feature-description">
+                        Read comfortably at any hour with our carefully crafted dark theme that preserves the parchment aesthetic.
+                    </p>
+                    <span class="feature-stat">Easy on the Eyes</span>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Bookmarks</h3>
+                    <p class="feature-description">
+                        Mark your favorite verses and create personal collections for quick access and reflection.
+                    </p>
+                    <span class="feature-stat">Unlimited Bookmarks</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="divider">
+        <div class="divider-pattern"></div>
+    </div>
+
+    <!-- Verse Spotlight -->
+    <section class="verse-spotlight" id="verse">
+        <div class="container">
+            <h2 class="section-title">Verse of the Day</h2>
+            <div class="verse-card">
+                <p class="verse-arabic" id="verseArabic">
+                    ﴿ المَ * ذِكَ الْكِتَابُ لَا رَيْبَ فِيهِ هُدًى لِلْمُتَّقِينَ ﴾
+                </p>
+                <p class="verse-translation" id="verseTranslation">
+                    "This is the Book about which there is no doubt, a guidance for those conscious of Allah."
+                </p>
+                <p class="verse-reference">— Surah Al-Baqarah 2:2</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="divider">
+        <div class="divider-pattern"></div>
+    </div>
+
+    <!-- App Preview -->
+    <section class="app-preview" id="preview">
+        <div class="container">
+            <h2 class="section-title">Experience Noor</h2>
+            <div class="preview-container">
+                <div class="phone-mockup">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen">
+                        <div class="phone-content">
+                            <div class="app-logo">نور</div>
+                            <div class="surah-list-item">
+                                <div class="surah-number">1</div>
+                                <div class="surah-name">الفاتحة</div>
+                                <div class="surah-ayat">7 verses</div>
+                            </div>
+                            <div class="surah-list-item">
+                                <div class="surah-number">2</div>
+                                <div class="surah-name">البقرة</div>
+                                <div class="surah-ayat">286 verses</div>
+                            </div>
+                            <div class="surah-list-item">
+                                <div class="surah-number">3</div>
+                                <div class="surah-name">آل عمران</div>
+                                <div class="surah-ayat">200 verses</div>
+                            </div>
+                            <div class="surah-list-item">
+                                <div class="surah-number">36</div>
+                                <div class="surah-name">يس</div>
+                                <div class="surah-ayat">83 verses</div>
+                            </div>
+                            <div class="surah-list-item">
+                                <div class="surah-number">55</div>
+                                <div class="surah-name">الرحمن</div>
+                                <div class="surah-ayat">78 verses</div>
+                            </div>
+                            <div class="surah-list-item">
+                                <div class="surah-number">67</div>
+                                <div class="surah-name">الملك</div>
+                                <div class="surah-ayat">30 verses</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="preview-text">
+                    <h3>Beautiful. Peaceful. Yours.</h3>
+                    <p>
+                        Noor brings the timeless wisdom of the Quran to your device with an interface inspired by
+                        traditional Islamic manuscripts. Every detail is crafted to create a serene reading and
+                        listening experience.
+                    </p>
+                    <ul class="preview-features">
+                        <li>Seamless playback with verse-by-verse navigation</li>
+                        <li>Download Surahs for offline listening</li>
+                        <li>Adjustable playback speed (0.5x - 2x)</li>
+                        <li>Repeat modes: verse, Surah, or loop</li>
+                        <li>Sleep timer for bedtime listening</li>
+                        <li>Cloud sync across all your devices</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="divider">
+        <div class="divider-pattern"></div>
+    </div>
+
+    <!-- Download Section -->
+    <section class="download" id="download">
+        <div class="container download-content">
+            <h2 class="download-title">Begin Your Journey</h2>
+            <p class="download-subtitle">
+                Download Noor today and carry the Quran with you wherever you go. Free forever, no ads, no subscriptions.
+            </p>
+            <div class="download-buttons">
+                <a href="#" class="store-btn" aria-label="Download on Google Play">
+                    <svg class="store-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,9.88L14.54,12.14L3.78,4.94L6.05,2.66Z"/>
+                    </svg>
+                    <div class="store-text">
+                        <span class="store-label">Get it on</span>
+                        <span class="store-name">Google Play</span>
+                    </div>
+                </a>
+                <a href="#" class="store-btn" aria-label="Download on App Store">
+                    <svg class="store-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                    </svg>
+                    <div class="store-text">
+                        <span class="store-label">Download on the</span>
+                        <span class="store-name">App Store</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-logo">نور</div>
+            <p class="footer-text">
+                Made with ❤️ for the Ummah. The Quran is a guidance for mankind.
+            </p>
+            <p class="footer-text" style="margin-top: 1rem; font-size: 0.8rem;">
+                © 2026 Noor App. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Night Mode Toggle Indicator -->
+    <div class="night-mode-indicator" id="nightIndicator">
+        Night Mode Active
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navLinks = document.getElementById('navLinks');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            mobileMenuBtn.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const navHeight = document.getElementById('navbar').offsetHeight;
+                    const targetPosition = target.offsetTop - navHeight - 20;
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Night mode toggle (for demo - in real app would persist)
+        let nightMode = false;
+        const nightIndicator = document.getElementById('nightIndicator');
+
+        // Tledge: Double-click anywhere on hero to toggle night mode
+        document.querySelector('.hero').addEventListener('dblclick', () => {
+            nightMode = !nightMode;
+            document.body.classList.toggle('night-mode', nightMode);
+
+            if (nightMode) {
+                document.documentElement.style.setProperty('--parchment-bg', '#1a1a1a');
+                document.documentElement.style.setProperty('--parchment-light', '#2a2a2a');
+                document.documentElement.style.setProperty('--text-dark', '#f5f0e6');
+                document.documentElement.style.setProperty('--text-medium', '#e8d48a');
+                document.documentElement.style.setProperty('--text-light', '#c5a028');
+                nightIndicator.classList.add('visible');
+            } else {
+                document.documentElement.style.setProperty('--parchment-bg', '#F5F0E6');
+                document.documentElement.style.setProperty('--parchment-light', '#FFFDD0');
+                document.documentElement.style.setProperty('--text-dark', '#3E2723');
+                document.documentElement.style.setProperty('--text-medium', '#5D4037');
+                document.documentElement.style.setProperty('--text-light', '#8D6E63');
+                nightIndicator.classList.remove('visible');
+            }
+
+            setTimeout(() => {
+                nightIndicator.classList.remove('visible');
+            }, 2000);
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .verse-card, .phone-mockup, .preview-text').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Navbar background on scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.style.boxShadow = '0 4px 20px rgba(62, 39, 35, 0.1)';
+            } else {
+                nav.style.boxShadow = 'none';
+            }
+        });
+
+        // Daily verse rotation (sample verses from the Quran)
+        const verses = [
+            {
+                arabic: '﴿ المَ * ذِكَ الْكِتَابُ لَا رَيْبَ فِيهِ هُدًى لِلْمُتَّقِينَ ﴾',
+                translation: '"This is the Book about which there is no doubt, a guidance for those conscious of Allah."',
+                reference: '— Surah Al-Baqarah 2:2'
+            },
+            {
+                arabic: '﴿ إِنَّ مَعَ الْعُسْرِ يُسْرًا * إِنَّ مَعَ الْعُسْرِ يُسْرًا ﴾',
+                translation: '"Indeed, with hardship comes ease. Indeed, with hardship comes ease."',
+                reference: '— Surah Ash-Sharh 94:6-7'
+            },
+            {
+                arabic: '﴿ وَقُلْ رَبِّ زِدْنِي عِلْمًا ﴾',
+                translation: '"And say: My Lord, increase me in knowledge."',
+                reference: '— Surah Ta-Ha 20:114'
+            },
+            {
+                arabic: '﴿ إِنَّ اللَّهَ لَا يُغَيِّرُ مَا بِقَوْمٍ حَتَّى يُغَيِّرُوا مَا بِأَنْفُسِهِمْ ﴾',
+                translation: '"Indeed, Allah will not change the condition of a people until they change what is in themselves."',
+                reference: '— Surah Ar-Ra\'d 13:11'
+            }
+        ];
+
+        // Rotate verse daily
+        const dayOfMonth = new Date().getDate();
+        const verseIndex = dayOfMonth % verses.length;
+        const currentVerse = verses[verseIndex];
+
+        document.getElementById('verseArabic').textContent = currentVerse.arabic;
+        document.getElementById('verseTranslation').textContent = currentVerse.translation;
+        document.getElementById('verseReference').textContent = currentVerse.reference;
+    </script>
+</body>
+</html>

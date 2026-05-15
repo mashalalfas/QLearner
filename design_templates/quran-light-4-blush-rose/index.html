@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quran Flow — Find Peace in the Quran</title>
+    <meta name="description" content="A calming Quran streaming app with daily verses, prayer times, recitation, and memorization tracking.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-cream: #FFF5EE;
+            --bg-blush: #FFF0F5;
+            --rose-gold-1: #E8B4B8;
+            --rose-gold-2: #D4A5A5;
+            --rose-gold-subtle: rgba(212, 165, 165, 0.15);
+            --text-plum: #6D4C41;
+            --text-plum-muted: #8B6F5C;
+            --card-shadow: 0 4px 24px rgba(109, 76, 65, 0.06);
+            --card-hover-shadow: 0 8px 32px rgba(109, 76, 65, 0.1);
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --font-serif: 'Cormorant Garamond', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --transition-smooth: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-cream);
+            color: var(--text-plum);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Blob animations */
+        @keyframes float1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -40px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-25px, 35px) scale(1.08); }
+            66% { transform: translate(15px, -30px) scale(0.92); }
+        }
+
+        @keyframes float3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(20px, 25px) scale(1.03); }
+            66% { transform: translate(-30px, -15px) scale(0.97); }
+        }
+
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.02); }
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 245, 238, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1000;
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 1px 0 rgba(212, 165, 165, 0.2);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--rose-gold-1);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-plum);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--rose-gold-1);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--rose-gold-1);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .nav-toggle span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--text-plum);
+            margin: 6px 0;
+            transition: var(--transition-smooth);
+            border-radius: 2px;
+        }
+
+        /* Mobile menu */
+        @media (max-width: 768px) {
+            .nav-toggle {
+                display: block;
+                z-index: 1001;
+            }
+
+            .nav-toggle.active span:nth-child(1) {
+                transform: rotate(45deg) translate(5px, 5px);
+            }
+
+            .nav-toggle.active span:nth-child(2) {
+                opacity: 0;
+            }
+
+            .nav-toggle.active span:nth-child(3) {
+                transform: rotate(-45deg) translate(7px, -6px);
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 80%;
+                max-width: 300px;
+                height: 100vh;
+                background: var(--bg-blush);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 2.5rem;
+                transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: -4px 0 24px rgba(109, 76, 65, 0.1);
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .nav-links a {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6rem 1.5rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg-blobs {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.5;
+            animation: float1 20s ease-in-out infinite;
+        }
+
+        .blob-1 {
+            width: 320px;
+            height: 320px;
+            background: var(--rose-gold-1);
+            top: 15%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 280px;
+            height: 280px;
+            background: var(--rose-gold-2);
+            top: 60%;
+            right: 12%;
+            animation: float2 22s ease-in-out infinite;
+            animation-delay: -7s;
+        }
+
+        .blob-3 {
+            width: 200px;
+            height: 200px;
+            background: var(--rose-gold-1);
+            bottom: 20%;
+            left: 25%;
+            animation: float3 18s ease-in-out infinite;
+            animation-delay: -14s;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+        }
+
+        .hero h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 600;
+            line-height: 1.15;
+            color: var(--text-plum);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            font-size: clamp(1.1rem, 2vw, 1.35rem);
+            color: var(--text-plum-muted);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+            font-weight: 300;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, var(--rose-gold-1), var(--rose-gold-2));
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.05rem;
+            box-shadow: 0 8px 32px rgba(212, 165, 165, 0.35);
+            transition: var(--transition-smooth);
+            border: none;
+            cursor: pointer;
+        }
+
+        .hero-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(212, 165, 165, 0.45);
+        }
+
+        .heart-beat {
+            display: inline-block;
+            animation: pulse-soft 2s ease-in-out infinite;
+        }
+
+        /* Features */
+        .features {
+            padding: 6rem 1.5rem;
+            background: var(--bg-blush);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-serif);
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 600;
+            color: var(--text-plum);
+            margin-bottom: 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            color: var(--text-plum-muted);
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-cream);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--rose-gold-1), var(--rose-gold-2));
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--rose-gold-subtle);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-plum);
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.01em;
+        }
+
+        .feature-card p {
+            color: var(--text-plum-muted);
+            line-height: 1.7;
+        }
+
+        /* Testimonial */
+        .testimonial {
+            padding: 6rem 1.5rem;
+            background: var(--bg-cream);
+        }
+
+        .testimonial-card {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 3rem;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            position: relative;
+        }
+
+        .testimonial-card::before {
+            content: '"';
+            font-family: var(--font-serif);
+            font-size: 5rem;
+            color: var(--rose-gold-subtle);
+            position: absolute;
+            top: 1.5rem;
+            left: 2rem;
+            line-height: 1;
+        }
+
+        .testimonial-text {
+            font-family: var(--font-serif);
+            font-size: 1.4rem;
+            font-style: italic;
+            color: var(--text-plum);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .testimonial-author {
+            font-weight: 500;
+            color: var(--text-plum);
+        }
+
+        .testimonial-role {
+            font-size: 0.9rem;
+            color: var(--text-plum-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Download CTA */
+        .download-cta {
+            padding: 6rem 1.5rem;
+            background: linear-gradient(135deg, var(--rose-gold-1), var(--rose-gold-2));
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-cta::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 50%);
+            animation: pulse-soft 8s ease-in-out infinite;
+        }
+
+        .download-content {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .download-cta h2 {
+            font-family: var(--font-serif);
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 600;
+            color: white;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .download-cta p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2.5rem;
+            line-height: 1.7;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: white;
+            color: var(--text-plum);
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.05rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transition: var(--transition-smooth);
+            border: none;
+            cursor: pointer;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Footer */
+        .footer {
+            padding: 3rem 1.5rem 2rem;
+            background: var(--bg-blush);
+            border-top: 1px solid var(--rose-gold-subtle);
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .footer-logo {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--rose-gold-1);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-links a {
+            color: var(--text-plum-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--rose-gold-1);
+        }
+
+        .footer-copy {
+            color: var(--text-plum-muted);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus states */
+        a:focus-visible,
+        button:focus-visible {
+            outline: 2px solid var(--rose-gold-1);
+            outline-offset: 2px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .hero {
+                padding-top: 5rem;
+            }
+
+            .features,
+            .testimonial,
+            .download-cta {
+                padding: 4rem 1.25rem;
+            }
+
+            .testimonial-card {
+                padding: 2.5rem 1.5rem;
+            }
+
+            .footer-links {
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">Quran Flow</a>
+            
+            <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-links" id="nav-menu" role="menubar">
+                <li role="none"><a href="#features" role="menuitem">Features</a></li>
+                <li role="none"><a href="#testimonial" role="menuitem">Stories</a></li>
+                <li role="none"><a href="#download" role="menuitem">Get the App</a></li>
+                <li role="none"><a href="#contact" role="menuitem">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-bg-blobs" aria-hidden="true">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+        </div>
+        
+        <div class="hero-content">
+            <h1 id="hero-title">Find Peace in the Quran</h1>
+            <p>Your gentle companion for daily reflection, prayer times, and memorization. Let the words of the Quran soothe your heart and mind, wherever you are.</p>
+            <button class="hero-cta" onclick="scrollToDownload()">
+                <span class="heart-beat">♡</span>
+                Start Your Journey
+            </button>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features" aria-labelledby="features-title">
+        <div class="section-header">
+            <h2 id="features-title">Gentle Features for a Peaceful Practice</h2>
+            <p>Thoughtfully designed tools that support your spiritual journey without overwhelming you.</p>
+        </div>
+
+        <div class="features-grid">
+            <article class="feature-card">
+                <div class="feature-icon" aria-hidden="true">📖</div>
+                <h3>Daily Verses</h3>
+                <p>Receive a beautifully formatted verse each morning, with reflection prompts to start your day with intention and peace.</p>
+            </article>
+
+            <article class="feature-card">
+                <div class="feature-icon" aria-hidden="true">🕌</div>
+                <h3>Prayer Times</h3>
+                <p>Accurate prayer times based on your location, with gentle reminders and a simple qibla finder to ground your worship.</p>
+            </article>
+
+            <article class="feature-card">
+                <div class="feature-icon" aria-hidden="true">🎧</div>
+                <h3>Recitation</h3>
+                <p>Stream high-quality recitations from renowned readers, with adjustable playback speed and repeat modes for memorization.</p>
+            </article>
+
+            <article class="feature-card">
+                <div class="feature-icon" aria-hidden="true">🌱</div>
+                <h3>Memorization Tracker</h3>
+                <p>Set daily goals, track your progress, and celebrate milestones as you gently build a lifelong connection with the Quran.</p>
+            </article>
+        </div>
+    </section>
+
+    <!-- Testimonial Section -->
+    <section class="testimonial" id="testimonial" aria-labelledby="testimonial-title">
+        <div class="section-header">
+            <h2 id="testimonial-title">From Our Community</h2>
+        </div>
+
+        <blockquote class="testimonial-card">
+            <p class="testimonial-text">"Quran Flow has transformed how I connect with the Quran. The daily verses arrive like gentle reminders throughout my day, and the memorization tracker has helped me finally commit surahs to heart. It's not just an app — it's a companion on my spiritual path."</p>
+            <footer>
+                <p class="testimonial-author">Amina R.</p>
+                <p class="testimonial-role">Member since 2025</p>
+            </footer>
+        </blockquote>
+    </section>
+
+    <!-- Download CTA Section -->
+    <section class="download-cta" id="download" aria-labelledby="download-title">
+        <div class="download-content">
+            <h2 id="download-title">Begin Your Journey Today</h2>
+            <p>Join thousands finding daily peace through the Quran. Available for iOS and Android.</p>
+            <button class="download-btn" onclick="alert('Download links would appear here for App Store and Google Play.')">
+                <span>⬇</span>
+                Download Free
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="contact" role="contentinfo">
+        <div class="footer-container">
+            <div class="footer-logo">Quran Flow</div>
+            
+            <ul class="footer-links">
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Use</a></li>
+                <li><a href="mailto:hello@quranflow.app">Contact Us</a></li>
+                <li><a href="#">Support</a></li>
+            </ul>
+            
+            <p class="footer-copy">© 2026 Quran Flow. Made with care for the ummah.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile navigation toggle
+        const navToggle = document.querySelector('.nav-toggle');
+        const navLinks = document.querySelector('.nav-links');
+
+        navToggle.addEventListener('click', () => {
+            const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+            navToggle.setAttribute('aria-expanded', !expanded);
+            navToggle.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navToggle.classList.remove('active');
+                navLinks.classList.remove('active');
+                navToggle.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        // Smooth scroll to download section
+        function scrollToDownload() {
+            document.getElementById('download').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+
+        // Close mobile menu on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navLinks.classList.contains('active')) {
+                navToggle.classList.remove('active');
+                navLinks.classList.remove('active');
+                navToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    </script>
+</body>
+</html>

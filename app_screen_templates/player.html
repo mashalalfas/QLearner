@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Audio Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        :root {
+            --md-sys-color-primary: #6750A4;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #EADDFF;
+            --md-sys-color-on-primary-container: #21005E;
+            --md-sys-color-secondary: #625B71;
+            --md-sys-color-on-secondary: #FFFFFF;
+            --md-sys-color-secondary-container: #E8DEF8;
+            --md-sys-color-on-secondary-container: #1D192B;
+            --md-sys-color-tertiary: #7D5260;
+            --md-sys-color-on-tertiary: #FFFFFF;
+            --md-sys-color-tertiary-container: #FFD8E4;
+            --md-sys-color-on-tertiary-container: #31111D;
+            --md-sys-color-error: #BA1A1A;
+            --md-sys-color-on-error: #FFFFFF;
+            --md-sys-color-error-container: #FFDAD6;
+            --md-sys-color-on-error-container: #410002;
+            --md-sys-color-background: #FFFBFE;
+            --md-sys-color-on-background: #1C1B1F;
+            --md-sys-color-surface: #FFFBFE;
+            --md-sys-color-on-surface: #1C1B1F;
+            --md-sys-color-surface-variant: #E7E0EC;
+            --md-sys-color-on-surface-variant: #49454F;
+            --md-sys-color-outline: #79747E;
+            --md-sys-color-outline-variant: #CAC4D0;
+            --md-sys-color-scrim: #000000;
+            --md-sys-color-inverse-surface: #313033;
+            --md-sys-color-inverse-on-surface: #F4EFF4;
+            --md-sys-color-inverse-primary: #D0BCFF;
+            --md-elevation-1: 1px 2px 4px rgba(0,0,0,0.1);
+            --md-elevation-3: 2px 4px 8px rgba(0,0,0,0.12);
+            --md-elevation-5: 4px 8px 16px rgba(0,0,0,0.14);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --md-sys-color-primary: #D0BCFF;
+                --md-sys-color-on-primary: #381E72;
+                --md-sys-color-primary-container: #4F378B;
+                --md-sys-color-on-primary-container: #EADDFF;
+                --md-sys-color-secondary: #CCC2DC;
+                --md-sys-color-on-secondary: #332D41;
+                --md-sys-color-secondary-container: #4A4458;
+                --md-sys-color-on-secondary-container: #E8DEF8;
+                --md-sys-color-tertiary: #EFB8C8;
+                --md-sys-color-on-tertiary: #492532;
+                --md-sys-color-tertiary-container: #633B48;
+                --md-sys-color-on-tertiary-container: #FFD8E4;
+                --md-sys-color-error: #FFB4AB;
+                --md-sys-color-on-error: #690005;
+                --md-sys-color-error-container: #93000A;
+                --md-sys-color-on-error-container: #FFDAD6;
+                --md-sys-color-background: #1C1B1F;
+                --md-sys-color-on-background: #E6E1E5;
+                --md-sys-color-surface: #1C1B1F;
+                --md-sys-color-on-surface: #E6E1E5;
+                --md-sys-color-surface-variant: #49454F;
+                --md-sys-color-on-surface-variant: #CAC4D0;
+                --md-sys-color-outline: #938F99;
+                --md-sys-color-outline-variant: #49454F;
+                --md-sys-color-scrim: #000000;
+                --md-sys-color-inverse-surface: #E6E1E5;
+                --md-sys-color-inverse-on-surface: #313033;
+                --md-sys-color-inverse-primary: #6750A4;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Roboto', sans-serif;
+            background: var(--md-sys-color-background);
+            color: var(--md-sys-color-on-background);
+        }
+
+        /* Translucent system bars illusion */
+        .system-bars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: env(safe-area-inset-top, 24px);
+            background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 100%);
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .system-bars.bottom {
+            top: auto;
+            bottom: 0;
+            background: linear-gradient(0deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        /* Main container */
+        .player {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: calc(env(safe-area-inset-top, 24px) + 16px) 16px calc(env(safe-area-inset-bottom, 24px) + 16px);
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Header with back button */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .back-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface-variant);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .back-btn:hover {
+            background: var(--md-sys-color-outline-variant);
+        }
+
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+
+        .header-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        /* Album art section */
+        .album-art-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            min-height: 0;
+        }
+
+        .album-art {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 24px;
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            box-shadow: var(--md-elevation-5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .album-art::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(103, 80, 164, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(125, 82, 96, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(98, 91, 113, 0.2) 0%, transparent 60%);
+        }
+
+        .quran-pattern {
+            width: 70%;
+            height: 70%;
+            position: relative;
+        }
+
+        .quran-pattern svg {
+            width: 100%;
+            height: 100%;
+            opacity: 0.6;
+        }
+
+        /* Track info */
+        .track-info {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .surah-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--md-sys-color-on-surface);
+            margin-bottom: 4px;
+        }
+
+        .reciter-name {
+            font-size: 16px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        /* Seek bar */
+        .seek-container {
+            margin-bottom: 20px;
+        }
+
+        .seek-bar-wrapper {
+            position: relative;
+            height: 4px;
+            background: var(--md-sys-color-surface-variant);
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .seek-bar-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: var(--md-sys-color-primary);
+            border-radius: 2px;
+            pointer-events: none;
+        }
+
+        .seek-thumb {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: var(--md-sys-color-primary);
+            border-radius: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: grab;
+            pointer-events: auto;
+        }
+
+        .seek-thumb:active {
+            cursor: grabbing;
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
+        .time-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--md-sys-color-on-surface-variant);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Main controls */
+        .main-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .ctrl-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface-variant);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .ctrl-btn:hover {
+            background: var(--md-sys-color-outline-variant);
+        }
+
+        .ctrl-btn:active {
+            transform: scale(0.95);
+        }
+
+        .play-btn {
+            width: 72px;
+            height: 72px;
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .play-btn:hover {
+            background: var(--md-sys-color-primary);
+            opacity: 0.9;
+        }
+
+        .play-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Secondary controls */
+        .secondary-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--md-sys-color-on-surface-variant);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: var(--md-sys-color-surface-variant);
+        }
+
+        .icon-btn.active {
+            color: var(--md-sys-color-primary);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Speed selector dropdown */
+        .speed-selector {
+            position: relative;
+        }
+
+        .speed-btn {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--md-sys-color-outline);
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .speed-btn:hover {
+            background: var(--md-sys-color-surface-variant);
+        }
+
+        .speed-menu {
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--md-sys-color-surface);
+            border-radius: 16px;
+            box-shadow: var(--md-elevation-5);
+            padding: 8px;
+            min-width: 120px;
+            display: none;
+            z-index: 100;
+        }
+
+        .speed-menu.show {
+            display: block;
+        }
+
+        .speed-option {
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--md-sys-color-on-surface);
+            transition: background 0.2s;
+        }
+
+        .speed-option:hover {
+            background: var(--md-sys-color-surface-variant);
+        }
+
+        .speed-option.active {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+        }
+    </style>
+</head>
+<body>
+    <div class="system-bars"></div>
+    <div class="system-bars bottom"></div>
+
+    <div class="player">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" id="backBtn" aria-label="Go back">
+                <span class="material-icons-round">arrow_back</span>
+            </button>
+            <div class="header-title">Now Playing</div>
+        </div>
+
+        <!-- Album Art -->
+        <div class="album-art-container">
+            <div class="album-art">
+                <div class="quran-pattern">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Abstract geometric pattern inspired by Islamic art -->
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#EADDFF;stop-opacity:0.8" />
+                                <stop offset="100%" style="stop-color:#FFD8E4;stop-opacity:0.6" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Central star pattern -->
+                        <polygon points="100,20 120,75 180,75 130,115 150,170 100,135 50,170 70,115 20,75 80,75"
+                                 fill="none" stroke="url(#grad1)" stroke-width="2" opacity="0.8"/>
+                        <!-- Concentric circles -->
+                        <circle cx="100" cy="100" r="40" fill="none" stroke="url(#grad1)" stroke-width="1" opacity="0.5"/>
+                        <circle cx="100" cy="100" r="60" fill="none" stroke="url(#grad1)" stroke-width="1" opacity="0.4"/>
+                        <circle cx="100" cy="100" r="80" fill="none" stroke="url(#grad1)" stroke-width="1" opacity="0.3"/>
+                        <!-- Decorative arcs -->
+                        <path d="M 60 100 A 40 40 0 0 1 140 100" fill="none" stroke="url(#grad1)" stroke-width="1" opacity="0.5"/>
+                        <path d="M 40 100 A 60 60 0 0 1 160 100" fill="none" stroke="url(#grad1)" stroke-width="1" opacity="0.4"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Track Info -->
+        <div class="track-info">
+            <div class="surah-title" id="surahTitle">Al-Fatihah</div>
+            <div class="reciter-name" id="reciterName">Mishary Rashid Alafasy</div>
+        </div>
+
+        <!-- Seek Bar -->
+        <div class="seek-container">
+            <div class="seek-bar-wrapper" id="seekBar">
+                <div class="seek-bar-fill" id="seekFill"></div>
+                <div class="seek-thumb" id="seekThumb"></div>
+            </div>
+            <div class="time-labels">
+                <span id="currentTime">0:00</span>
+                <span id="duration">7:23</span>
+            </div>
+        </div>
+
+        <!-- Main Controls -->
+        <div class="main-controls">
+            <button class="ctrl-btn" id="rewindBtn" aria-label="Rewind 10 seconds">
+                <span class="material-icons-round">replay_10</span>
+            </button>
+            <button class="ctrl-btn play-btn" id="playPauseBtn" aria-label="Play/Pause">
+                <span class="material-icons-round" id="playIcon">play_arrow</span>
+            </button>
+            <button class="ctrl-btn" id="forwardBtn" aria-label="Forward 10 seconds">
+                <span class="material-icons-round">forward_10</span>
+            </button>
+        </div>
+
+        <!-- Secondary Controls -->
+        <div class="secondary-controls">
+            <div class="control-group">
+                <div class="speed-selector">
+                    <button class="speed-btn" id="speedBtn">
+                        <span id="speedValue">1.0x</span>
+                        <span class="material-icons-round" style="font-size: 16px;">expand_more</span>
+                    </button>
+                    <div class="speed-menu" id="speedMenu">
+                        <div class="speed-option" data-speed="0.5">0.5x</div>
+                        <div class="speed-option" data-speed="0.75">0.75x</div>
+                        <div class="speed-option active" data-speed="1.0">1.0x</div>
+                        <div class="speed-option" data-speed="1.25">1.25x</div>
+                        <div class="speed-option" data-speed="1.5">1.5x</div>
+                        <div class="speed-option" data-speed="1.75">1.75x</div>
+                        <div class="speed-option" data-speed="2.0">2.0x</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <button class="icon-btn" id="repeatBtn" aria-label="Toggle repeat">
+                    <span class="material-icons-round">repeat</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Surah data (114 surahs)
+        const surahs = [
+            { id: 1, name: "Al-Fatihah", duration: 443 },
+            { id: 2, name: "Al-Baqarah", duration: 8330 },
+            { id: 3, name: "Aali Imran", duration: 3421 },
+            { id: 4, name: "An-Nisa", duration: 3363 },
+            { id: 5, name: "Al-Ma'idah", duration: 2326 },
+            { id: 6, name: "Al-An'am", duration: 3056 },
+            { id: 7, name: "Al-A'raf", duration: 3828 },
+            { id: 8, name: "Al-Anfal", duration: 1312 },
+            { id: 9, name: "At-Tawbah", duration: 2762 },
+            { id: 10, name: "Yunus", duration: 2149 },
+            { id: 11, name: "Hud", duration: 2406 },
+            { id: 12, name: "Yusuf", duration: 2477 },
+            { id: 13, name: "Ar-Ra'd", duration: 1154 },
+            { id: 14, name: "Ibrahim", duration: 993 },
+            { id: 15, name: "Al-Hijr", duration: 1490 },
+            { id: 16, name: "An-Nahl", duration: 3338 },
+            { id: 17, name: "Al-Isra", duration: 2392 },
+            { id: 18, name: "Al-Kahf", duration: 3291 },
+            { id: 19, name: "Maryam", duration: 1429 },
+            { id: 20, name: "Taha", duration: 1942 },
+            { id: 21, name: "Al-Anbiya", duration: 2415 },
+            { id: 22, name: "Al-Hajj", duration: 3221 },
+            { id: 23, name: "Al-Mu'minun", duration: 2022 },
+            { id: 24, name: "An-Nur", duration: 3186 },
+            { id: 25, name: "Al-Furqan", duration: 1487 },
+            { id: 26, name: "Ash-Shu'ara", duration: 2692 },
+            { id: 27, name: "An-Naml", duration: 2413 },
+            { id: 28, name: "Al-Qasas", duration: 2827 },
+            { id: 29, name: "Al-Ankabut", duration: 1671 },
+            { id: 30, name: "Ar-Rum", duration: 1296 },
+            { id: 31, name: "Luqman", duration: 1102 },
+            { id: 32, name: "As-Sajdah", duration: 687 },
+            { id: 33, name: "Al-Ahzab", duration: 3065 },
+            { id: 34, name: "Saba", duration: 1307 },
+            { id: 35, name: "Fatir", duration: 1531 },
+            { id: 36, name: "Ya-Sin", duration: 2529 },
+            { id: 37, name: "As-Saffat", duration: 2065 },
+            { id: 38, name: "Sad", duration: 2577 },
+            { id: 39, name: "Az-Zumar", duration: 3148 },
+            { id: 40, name: "Ghafir", duration: 3155 },
+            { id: 41, name: "Fussilat", duration: 1888 },
+            { id: 42, name: "Ash-Shura", duration: 2541 },
+            { id: 43, name: "Az-Zukhruf", duration: 1686 },
+            { id: 44, name: "Ad-Dukhan", duration: 749 },
+            { id: 45, name: "Al-Jathiyah", duration: 837 },
+            { id: 46, name: "Al-Ahqaf", duration: 1196 },
+            { id: 47, name: "Muhammad", duration: 1484 },
+            { id: 48, name: "Al-Fath", duration: 1085 },
+            { id: 49, name: "Al-Hujurat", duration: 740 },
+            { id: 50, name: "Qaf", duration: 1605 },
+            { id: 51, name: "Adh-Dhariyat", duration: 1053 },
+            { id: 52, name: "At-Tur", duration: 889 },
+            { id: 53, name: "An-Najm", duration: 671 },
+            { id: 54, name: "Al-Qamar", duration: 1243 },
+            { id: 55, name: "Ar-Rahman", duration: 1630 },
+            { id: 56, name: "Al-Waqi'ah", duration: 1021 },
+            { id: 57, name: "Al-Hadid", duration: 1411 },
+            { id: 58, name: "Al-Mujadila", duration: 1273 },
+            { id: 59, name: "Al-Hashr", duration: 1244 },
+            { id: 60, name: "Al-Mumtahanah", duration: 1083 },
+            { id: 61, name: "As-Saff", duration: 579 },
+            { id: 62, name: "Al-Jumu'ah", duration: 414 },
+            { id: 63, name: "Al-Munafiqun", duration: 751 },
+            { id: 64, name: "At-Taghabun", duration: 703 },
+            { id: 65, name: "At-Talaq", duration: 756 },
+            { id: 66, name: "At-Tahrim", duration: 716 },
+            { id: 67, name: "Al-Mulk", duration: 1151 },
+            { id: 68, name: "Al-Qalam", duration: 1029 },
+            { id: 69, name: "Al-Haqqah", duration: 952 },
+            { id: 70, name: "Al-Ma'arij", duration: 666 },
+            { id: 71, name: "Nuh", duration: 761 },
+            { id: 72, name: "Al-Jinn", duration: 817 },
+            { id: 73, name: "Al-Muzzammil", duration: 526 },
+            { id: 74, name: "Al-Muddaththir", duration: 745 },
+            { id: 75, name: "Al-Qiyamah", duration: 349 },
+            { id: 76, name: "Al-Insan", duration: 666 },
+            { id: 77, name: "Al-Mursalat", duration: 636 },
+            { id: 78, name: "An-Naba", duration: 557 },
+            { id: 79, name: "An-Nazi'at", duration: 535 },
+            { id: 80, name: "Abasa", duration: 626 },
+            { id: 81, name: "At-Takwir", duration: 417 },
+            { id: 82, name: "Al-Infitar", duration: 324 },
+            { id: 83, name: "Al-Mutaffifin", duration: 674 },
+            { id: 84, name: "Al-Inshiqaq", duration: 361 },
+            { id: 85, name: "Al-Buruj", duration: 396 },
+            { id: 86, name: "At-Tariq", duration: 294 },
+            { id: 87, name: "Al-A'la", duration: 297 },
+            { id: 88, name: "Al-Ghashiyah", duration: 317 },
+            { id: 89, name: "Al-Fajr", duration: 495 },
+            { id: 90, name: "Al-Balad", duration: 253 },
+            { id: 91, name: "Ash-Shams", duration: 215 },
+            { id: 92, name: "Al-Layl", duration: 272 },
+            { id: 93, name: "Ad-Duhaa", duration: 187 },
+            { id: 94, name: "Ash-Sharh", duration: 152 },
+            { id: 95, name: "At-Tin", duration: 147 },
+            { id: 96, name: "Al-Alaq", duration: 303 },
+            { id: 97, name: "Al-Qadr", duration: 187 },
+            { id: 98, name: "Al-Bayyinah", duration: 311 },
+            { id: 99, name: "Az-Zalzalah", duration: 200 },
+            { id: 100, name: "Al-Adiyat", duration: 229 },
+            { id: 101, name: "Al-Qari'ah", duration: 188 },
+            { id: 102, name: "At-Takathur", duration: 192 },
+            { id: 103, name: "Al-Asr", duration: 48 },
+            { id: 104, name: "Al-Humazah", duration: 275 },
+            { id: 105, name: "Al-Fil", duration: 107 },
+            { id: 106, name: "Quraysh", duration: 103 },
+            { id: 107, name: "Al-Ma'un", duration: 172 },
+            { id: 108, name: "Al-Kawthar", duration: 39 },
+            { id: 109, name: "Al-Kafirun", duration: 136 },
+            { id: 110, name: "An-Nasr", duration: 99 },
+            { id: 111, name: "Al-Masad", duration: 125 },
+            { id: 112, name: "Al-Ikhlas", duration: 67 },
+            { id: 113, name: "Al-Falaq", duration: 82 },
+            { id: 114, name: "An-Nas", duration: 95 }
+        ];
+
+        // Player state
+        const state = {
+            isPlaying: false,
+            currentTime: 0,
+            duration: 0,
+            speed: 1.0,
+            repeat: false,
+            surahId: 1,
+            startTime: 0,
+            animationFrameId: null
+        };
+
+        // DOM elements
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playIcon = document.getElementById('playIcon');
+        const rewindBtn = document.getElementById('rewindBtn');
+        const forwardBtn = document.getElementById('forwardBtn');
+        const seekBar = document.getElementById('seekBar');
+        const seekFill = document.getElementById('seekFill');
+        const seekThumb = document.getElementById('seekThumb');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const backBtn = document.getElementById('backBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const speedMenu = document.getElementById('speedMenu');
+        const speedValue = document.getElementById('speedValue');
+        const speedOptions = document.querySelectorAll('.speed-option');
+        const repeatBtn = document.getElementById('repeatBtn');
+        const surahTitle = document.getElementById('surahTitle');
+        const reciterName = document.getElementById('reciterName');
+
+        // Format time (seconds -> M:SS)
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Parse hash parameters
+        function parseHash() {
+            const hash = window.location.hash.substring(1); // remove #
+            const params = new URLSearchParams(hash);
+            const surah = parseInt(params.get('surah')) || 1;
+            const start = parseInt(params.get('start')) || 0;
+            return { surahId: surah, startTime: start };
+        }
+
+        // Load surah
+        function loadSurah(surahId, startTime = 0) {
+            const surah = surahs.find(s => s.id === surahId);
+            if (!surah) surah = surahs[0];
+
+            state.surahId = surah.id;
+            state.duration = surah.duration;
+            state.currentTime = Math.min(startTime, surah.duration);
+            state.isPlaying = false;
+
+            surahTitle.textContent = surah.name;
+            reciterName.textContent = "Mishary Rashid Alafasy";
+
+            updateUI();
+        }
+
+        // Update UI
+        function updateUI() {
+            const percent = (state.currentTime / state.duration) * 100;
+            seekFill.style.width = `${percent}%`;
+            seekThumb.style.left = `${percent}%`;
+            currentTimeEl.textContent = formatTime(state.currentTime);
+            durationEl.textContent = formatTime(state.duration);
+            playIcon.textContent = state.isPlaying ? 'pause' : 'play_arrow';
+            speedValue.textContent = `${state.speed}x`;
+            repeatBtn.classList.toggle('active', state.repeat);
+
+            // Update speed menu active state
+            speedOptions.forEach(opt => {
+                opt.classList.toggle('active', parseFloat(opt.dataset.speed) === state.speed);
+            });
+        }
+
+        // Play/Pause toggle
+        function togglePlay() {
+            state.isPlaying = !state.isPlaying;
+            if (state.isPlaying) {
+                startPlayback();
+            } else {
+                stopPlayback();
+            }
+            updateUI();
+        }
+
+        // Start playback simulation
+        function startPlayback() {
+            let lastTime = performance.now();
+            function tick(now) {
+                if (!state.isPlaying) return;
+                const delta = (now - lastTime) / 1000 * state.speed;
+                lastTime = now;
+                state.currentTime += delta;
+                if (state.currentTime >= state.duration) {
+                    if (state.repeat) {
+                        state.currentTime = 0;
+                    } else {
+                        state.currentTime = state.duration;
+                        state.isPlaying = false;
+                        updateUI();
+                        return;
+                    }
+                }
+                updateUI();
+                state.animationFrameId = requestAnimationFrame(tick);
+            }
+            state.animationFrameId = requestAnimationFrame(tick);
+        }
+
+        // Stop playback
+        function stopPlayback() {
+            if (state.animationFrameId) {
+                cancelAnimationFrame(state.animationFrameId);
+                state.animationFrameId = null;
+            }
+        }
+
+        // Seek functionality
+        function seekTo(clientX) {
+            const rect = seekBar.getBoundingClientRect();
+            const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+            state.currentTime = percent * state.duration;
+            updateUI();
+        }
+
+        // Handle seek bar drag
+        let isDragging = false;
+        seekThumb.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                seekTo(e.clientX);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        seekBar.addEventListener('click', (e) => {
+            if (e.target === seekThumb) return;
+            seekTo(e.clientX);
+        });
+
+        // Touch support for seek bar
+        seekBar.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            isDragging = true;
+            seekTo(touch.clientX);
+        });
+
+        seekBar.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                const touch = e.touches[0];
+                seekTo(touch.clientX);
+            }
+        });
+
+        seekBar.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Control buttons
+        playPauseBtn.addEventListener('click', togglePlay);
+
+        rewindBtn.addEventListener('click', () => {
+            state.currentTime = Math.max(0, state.currentTime - 10);
+            updateUI();
+        });
+
+        forwardBtn.addEventListener('click', () => {
+            state.currentTime = Math.min(state.duration, state.currentTime + 10);
+            updateUI();
+        });
+
+        // Back button
+        backBtn.addEventListener('click', () => {
+            stopPlayback();
+            window.location.hash = 'home';
+        });
+
+        // Speed selector
+        speedBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            speedMenu.classList.toggle('show');
+        });
+
+        speedOptions.forEach(opt => {
+            opt.addEventListener('click', () => {
+                state.speed = parseFloat(opt.dataset.speed);
+                updateUI();
+                speedMenu.classList.remove('show');
+            });
+        });
+
+        // Close speed menu when clicking outside
+        document.addEventListener('click', () => {
+            speedMenu.classList.remove('show');
+        });
+
+        // Repeat toggle
+        repeatBtn.addEventListener('click', () => {
+            state.repeat = !state.repeat;
+            updateUI();
+        });
+
+        // Initialize from hash
+        function init() {
+            const { surahId, startTime } = parseHash();
+            loadSurah(surahId, startTime);
+
+            // Auto-play if start time specified
+            if (startTime > 0) {
+                state.isPlaying = true;
+                startPlayback();
+            }
+        }
+
+        // Handle hash changes
+        window.addEventListener('hashchange', () => {
+            stopPlayback();
+            const { surahId, startTime } = parseHash();
+            loadSurah(surahId, startTime);
+            if (startTime > 0) {
+                state.isPlaying = true;
+                startPlayback();
+            }
+        });
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

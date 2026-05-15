@@ -1,0 +1,64 @@
+# Flutter
+.flutter/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+flutter_*.json
+generated_plugin_registrant.dart
+generated_plugin_registrant_*.dart
+
+# Android
+android/.gradle/
+android/app/debug/
+android/app/release/
+android/app/profile/
+android/build/
+android/captures/
+android/gradle/
+android/local.properties
+android/.idea/
+
+# iOS
+ios/.generated/
+ios/Flutter/.appprefix
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/Release.xcconfig
+ios/Flutter/Debug.xcconfig
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Coverage
+coverage/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Database
+*.db
+*.sqlite
+
+# Logs
+*.log
+
+# User secrets
+*.env
+.env.local
+secrets.*
