@@ -70,7 +70,9 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
   /// - Plays audio.
   Future<void> loadSurah(String surahId) async {
     await ensureSurahsLoaded();
-    _setLoading(true);
+    // NOTE: _isLoading is managed by the CALLER (playNext/playPrevious).
+    // loadSurah() does NOT set _isLoading — only playNext() and playPrevious() do,
+    // so the waveform stays visible for the full duration of the async operation.
     try {
       final surah = await _repository.getSurah(surahId);
       final audioUrl = surah.audioUrl;
@@ -80,8 +82,9 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
 
       state = surah;
       await _audioPlayer.play(audioUrl);
-    } finally {
-      _setLoading(false);
+    } catch (e) {
+      // Rethrow so callers know about audio failures
+      rethrow;
     }
   }
 
@@ -110,8 +113,13 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
     if (idx <= 0) return null; // at first surah or none
 
     final prevSurah = _allSurahs[idx - 1];
-    await loadSurah(prevSurah.surahId);
-    return prevSurah;
+    _setLoading(true);
+    try {
+      await loadSurah(prevSurah.surahId);
+      return prevSurah;
+    } finally {
+      _setLoading(false);
+    }
   }
 
   /// Whether prev navigation is allowed (not at surah 1 and a surah is selected).
