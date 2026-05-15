@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../home/providers/home_providers.dart';
+import '../../player/screens/player_screen.dart';
+import '../../player/providers/current_surah_provider.dart';
 import '../../../data/models/verse.dart';
 
 /// Read screen - displays verses of a surah for reading
@@ -47,7 +49,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
             itemCount: verses.length,
             itemBuilder: (context, index) {
               final verse = verses[index];
-              return _VerseCard(verse: verse);
+              return _VerseCard(verse: verse, surahId: widget.surahId);
             },
           );
         },
@@ -84,116 +86,131 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
 /// Card widget for displaying a single verse
 class _VerseCard extends StatelessWidget {
   final Verse verse;
+  final String surahId;
 
-  const _VerseCard({required this.verse});
+  const _VerseCard({required this.verse, required this.surahId});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Verse header with number
-            Row(
+    return Consumer(
+      builder: (context, ref, child) {
+        return Card(
+          margin: const EdgeInsets.only(bottom: 16),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Verse header with number
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentPurple.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'Verse ${verse.verseId}',
+                        style: const TextStyle(
+                          color: AppTheme.accentPurple,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    if (verse.audioUrl != null)
+                      IconButton(
+                        onPressed: () {
+                          // Load surah audio, then open player
+                          ref
+                              .read(currentSurahProvider.notifier)
+                              .ensureSurahsLoaded();
+                          ref
+                              .read(currentSurahProvider.notifier)
+                              .loadSurah(surahId);
+                          if (context.mounted) {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    PlayerScreen(surahId: surahId),
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.play_circle_outline,
+                          color: AppTheme.accentPurple,
+                        ),
+                      ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // Arabic text
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentPurple.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppTheme.lightLavender,
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    'Verse ${verse.verseId}',
+                    verse.arabicText,
+                    textAlign: TextAlign.right,
                     style: const TextStyle(
-                      color: AppTheme.accentPurple,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
+                      fontSize: 28,
+                      height: 1.8,
+                      color: AppTheme.darkText,
+                      fontFamily: 'Noto Sans Arabic',
+                      fontFamilyFallback: [
+                        'Amiri',
+                        'Scheherazade New',
+                        'Noto Naskh Arabic'
+                      ],
                     ),
                   ),
                 ),
-                const Spacer(),
-                if (verse.audioUrl != null)
-                  IconButton(
-                    onPressed: () {
-                      // Load surah audio, then open player
-                      ref.read(currentSurahProvider.notifier).ensureSurahsLoaded();
-                      ref.read(currentSurahProvider.notifier).loadSurah(widget.surahId);
-                      if (context.mounted) {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => PlayerScreen(surahId: widget.surahId),
-                          ),
-                        );
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.play_circle_outline,
-                      color: AppTheme.accentPurple,
-                    ),
+
+                const SizedBox(height: 16),
+
+                // English translation
+                Text(
+                  verse.englishText,
+                  style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
+                    height: 1.6,
+                    color: AppTheme.darkText,
                   ),
+                  textAlign: TextAlign.left,
+                ),
+
+                // Transliteration (if available)
+                if (verse.englishTransliteration != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    verse.englishTransliteration!,
+                    style: AppTheme.lightTheme.textTheme.bodyMedium
+                        ?.copyWith(
+                      fontStyle: FontStyle.italic,
+                      color: AppTheme.secondaryText,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                ],
               ],
             ),
-
-            const SizedBox(height: 16),
-
-            // Arabic text
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppTheme.lightLavender,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                verse.arabicText,
-                textAlign: TextAlign.right,
-                style: const TextStyle(
-                  fontSize: 28,
-                  height: 1.8,
-                  color: AppTheme.darkText,
-                  fontFamily: 'Noto Sans Arabic',
-                  fontFamilyFallback: ['Amiri', 'Scheherazade New', 'Noto Naskh Arabic'],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // English translation
-            Text(
-              verse.englishText,
-              style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
-                height: 1.6,
-                color: AppTheme.darkText,
-              ),
-              textAlign: TextAlign.left,
-            ),
-
-            // Transliteration (if available)
-            if (verse.englishTransliteration != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                verse.englishTransliteration!,
-                style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                  fontStyle: FontStyle.italic,
-                  color: AppTheme.secondaryText,
-                ),
-                textAlign: TextAlign.left,
-              ),
-            ],
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
