@@ -261,15 +261,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 20),
 
               // ── About Section ────────────────────────────────────────────
-              _SettingsSection(
+              const _SettingsSection(
                 title: 'About',
                 children: [
-                  const _InfoRow(
+                  _InfoRow(
                     label: 'App Version',
                     value: 'QLearner v0.2',
                   ),
-                  const SizedBox(height: 12),
-                  const _InfoRow(
+                  SizedBox(height: 12),
+                  _InfoRow(
                     label: 'Credits',
                     value: 'Audio from mp3quran.net',
                   ),
@@ -277,7 +277,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
 
               // Bottom spacing for navigation
-              SizedBox(height: bottomNavHeight + screenPaddingBottom),
+              const SizedBox(height: bottomNavHeight + screenPaddingBottom),
             ],
           ),
         ),
@@ -506,14 +506,14 @@ class _SettingsTextField extends StatelessWidget {
             fillColor: AppColors.bgCardInner,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
+              borderSide: const BorderSide(
                 color: AppColors.goldSoft,
                 width: 0.5,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
+              borderSide: const BorderSide(
                 color: AppColors.goldSoft,
                 width: 0.5,
               ),
@@ -564,9 +564,9 @@ class _ReciterSelectorState extends State<_ReciterSelector> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Label
-        Text(
+        const Text(
           'Reciter',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w500,
             color: AppColors.textGray,
@@ -662,7 +662,7 @@ class _ReciterSelectorState extends State<_ReciterSelector> {
                           ),
                         ),
                         if (isSelected)
-                          Icon(
+                          const Icon(
                             Icons.check_rounded,
                             color: AppColors.goldStart,
                             size: 18,

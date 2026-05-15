@@ -35,11 +35,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: AppColors.bgBase,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
+          padding: EdgeInsets.symmetric(
             horizontal: screenPaddingH,
             vertical: screenPaddingTop,
           ),
@@ -47,22 +47,22 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Library Header ──
-              const _LibraryHeader(),
+              _LibraryHeader(),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
 
               // ── Storage Card ──
-              const _StorageCard(),
+              _StorageCard(),
 
-              const SizedBox(height: 28),
+              SizedBox(height: 28),
 
               // ── Downloads Section ──
-              const _DownloadsSection(),
+              _DownloadsSection(),
 
-              const SizedBox(height: 32),
+              SizedBox(height: 32),
 
               // ── Bookmarks Section ──
-              const _BookmarksSection(),
+              _BookmarksSection(),
 
               // Bottom spacing for navigation
               SizedBox(height: bottomNavHeight + screenPaddingBottom),
@@ -125,7 +125,7 @@ class _StorageCard extends ConsumerWidget {
     // download service for total size of downloaded files and device storage
     const double usedGB = 2.4;
     const double totalGB = 16.0;
-    final double progress = usedGB / totalGB;
+    const double progress = usedGB / totalGB;
 
     return GlassCard(
       radius: cardBorderRadius,
@@ -434,7 +434,7 @@ class _DownloadItem extends StatelessWidget {
                     const SizedBox(height: 2),
                     // Ayah count + size (gray)
                     Text(
-                      '${surah.ayahCount} ayahs • ${sizeMB} MB',
+                      '${surah.ayahCount} ayahs • $sizeMB MB',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -641,12 +641,12 @@ class _EmptySectionMessage extends StatelessWidget {
           Icon(
             icon,
             size: 36,
-            color: AppColors.textGray.withOpacity(0.5),
+            color: AppColors.textGray.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 8),
           Text(
             message,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
               color: AppColors.textGray,

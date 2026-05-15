@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qlearner/core/theme/app_colors.dart';
 import 'package:qlearner/core/theme/app_typography.dart';
@@ -86,7 +87,12 @@ class PlayerScreen extends ConsumerWidget {
                       isLoading: isLoading,
                       onPrev: currentSurahNotifier.canGoPrev
                           ? () async {
-                              await currentSurahNotifier.playPrevious();
+                              try {
+                                await currentSurahNotifier.playPrevious();
+                              } catch (e) {
+                                debugPrint('Nav error (prev): $e');
+                                currentSurahNotifier.setLoading(false);
+                              }
                             }
                           : null,
                       onPlay: () async {
@@ -99,7 +105,12 @@ class PlayerScreen extends ConsumerWidget {
                       },
                       onNext: currentSurahNotifier.canGoNext
                           ? () async {
-                              await currentSurahNotifier.playNext();
+                              try {
+                                await currentSurahNotifier.playNext();
+                              } catch (e) {
+                                debugPrint('Nav error (next): $e');
+                                currentSurahNotifier.setLoading(false);
+                              }
                             }
                           : null,
                     ),
@@ -366,6 +377,75 @@ class _PlayerControls extends StatelessWidget {
   }
 }
 
+/// ±5-second seek buttons — small gold icons flanking the time labels
+class _SeekBack5Button extends StatelessWidget {
+  final int positionMs;
+  final int durationMs;
+  final ValueChanged<int> onSeek;
+
+  const _SeekBack5Button({
+    required this.positionMs,
+    required this.durationMs,
+    required this.onSeek,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final atStart = positionMs <= 5000;
+    return IconButton(
+      icon: const Icon(Icons.replay_5),
+      iconSize: 20,
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      onPressed: atStart
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              onSeek((positionMs - 5000).clamp(0, durationMs));
+            },
+      color: atStart
+          ? AppColors.goldMuted.withValues(alpha: 0.35)
+          : AppColors.goldMuted.withValues(alpha: 0.8),
+      tooltip: 'Back 5 seconds',
+    );
+  }
+}
+
+class _SeekForward5Button extends StatelessWidget {
+  final int positionMs;
+  final int durationMs;
+  final ValueChanged<int> onSeek;
+
+  const _SeekForward5Button({
+    required this.positionMs,
+    required this.durationMs,
+    required this.onSeek,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final atEnd = positionMs >= durationMs - 5000;
+    return IconButton(
+      icon: const Icon(Icons.forward_5),
+      iconSize: 20,
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      onPressed: atEnd
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              onSeek((positionMs + 5000).clamp(0, durationMs));
+            },
+      color: atEnd
+          ? AppColors.goldMuted.withValues(alpha: 0.35)
+          : AppColors.goldMuted.withValues(alpha: 0.8),
+      tooltip: 'Forward 5 seconds',
+    );
+  }
+}
+
 /// Seek bar wrapper that provides time labels and gold styling
 class _PlayerSeekBar extends ConsumerWidget {
   final AsyncValue<PlayerState> playerStateAsync;
@@ -398,6 +478,11 @@ class _PlayerSeekBar extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              _SeekBack5Button(
+                positionMs: _getPositionMs(ref),
+                durationMs: _getDurationMs(ref) ?? 0,
+                onSeek: onSeek,
+              ),
               Text(
                 _formatDuration(_getPositionMs(ref)),
                 style: const TextStyle(
@@ -413,6 +498,11 @@ class _PlayerSeekBar extends ConsumerWidget {
                   color: AppColors.goldMuted,
                   fontFamily: fontBody,
                 ),
+              ),
+              _SeekForward5Button(
+                positionMs: _getPositionMs(ref),
+                durationMs: _getDurationMs(ref) ?? 0,
+                onSeek: onSeek,
               ),
             ],
           ),
@@ -529,9 +619,9 @@ class _WaveformAnimation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return const Row(
       mainAxisSize: MainAxisSize.min,
-      children: const [
+      children: [
         _WaveformBar(delayMs: 0),
         SizedBox(width: 6),
         _WaveformBar(delayMs: 120),

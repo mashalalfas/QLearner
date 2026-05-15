@@ -22,12 +22,10 @@ class AppTheme {
         primary: accentPurple,
         secondary: darkPurple,
         surface: cream,
-        background: cream,
         error: Color(0xFFB00020),
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: darkText,
-        onBackground: darkText,
       ),
       scaffoldBackgroundColor: cream,
       appBarTheme: const AppBarTheme(

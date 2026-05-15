@@ -30,7 +30,7 @@ class GoldGradientBorder extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final gradient = const LinearGradient(
+    const gradient = LinearGradient(
       colors: [AppColors.goldStart, AppColors.goldEnd, AppColors.goldStart],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,

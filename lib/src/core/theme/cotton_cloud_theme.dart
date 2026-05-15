@@ -147,13 +147,13 @@ class CottonCloudTheme {
       shape: BoxShape.circle,
       boxShadow: [
         BoxShadow(
-          color: mint.withOpacity(0.45),
+          color: mint.withValues(alpha: 0.45),
           blurRadius: 24,
           spreadRadius: 0,
         ),
       ],
       border: Border.all(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha: 0.9),
         width: 5,
       ),
     );
@@ -169,12 +169,10 @@ class CottonCloudTheme {
         primary: accent,
         secondary: accentDark,
         surface: cream,
-        background: cream,
         error: Color(0xFFB00020),
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: text,
-        onBackground: text,
       ),
       scaffoldBackgroundColor: cream,
       appBarTheme: const AppBarTheme(
@@ -261,12 +259,10 @@ class CottonCloudTheme {
         primary: mint,
         secondary: lavender,
         surface: Color(0xFF2D2D3A),
-        background: Color(0xFF1A1A2E),
         error: Color(0xFFCF6679),
         onPrimary: text,
         onSecondary: text,
         onSurface: cream,
-        onBackground: cream,
       ),
       scaffoldBackgroundColor: const Color(0xFF1A1A2E),
       appBarTheme: const AppBarTheme(

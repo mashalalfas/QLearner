@@ -53,7 +53,7 @@ class AudioPlayerServiceImpl extends AudioPlayerService {
         androidNotificationChannelName: 'Quran Playback',
         androidNotificationOngoing: true,
         androidStopForegroundOnPause: true,
-        androidNotificationIcon: 'mipmap/ic_launcher',
+        androidNotificationIcon: 'drawable/ic_notification',
       ),
     );
     return await _sharedHandler!;
@@ -293,7 +293,15 @@ class _AudioHandlerImpl extends asvc.BaseAudioHandler {
     // condition in just_audio where setAudioSource is called while a previous
     // source is still active.
     await _player.stop();
+    // Force a notification refresh: clear the media item first so
+    // audio_service always sees a genuine change when we set the new one.
+    // (Adding the same MediaItem reference again would be a no-op.)
+    this.mediaItem.add(null);
     this.mediaItem.add(mediaItem);
+
+    // Push the new queue entry so lock-screen controls reflect it.
+    this.queue.add([mediaItem]);
+
     final source = ja.AudioSource.uri(Uri.parse(url), tag: mediaItem);
     await _player.setAudioSource(source);
     if (startMs != null) {

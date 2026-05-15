@@ -1,2 +1,2 @@
-/// Presentation layer barrel export
+// Presentation layer barrel export
 export 'app.dart';

@@ -27,16 +27,16 @@ class RecitersScreen extends ConsumerWidget {
             const SizedBox(height: screenPaddingTop),
 
             // Header section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: screenPaddingH),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: screenPaddingH),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Title with gold underline
-                  const _GoldUnderlineTitle(title: 'Reciters'),
-                  const SizedBox(height: 8),
+                  _GoldUnderlineTitle(title: 'Reciters'),
+                  SizedBox(height: 8),
                   // Subtitle
-                  const Text(
+                  Text(
                     'Choose your preferred recitation style',
                     style: TextStyle(
                       fontSize: 13,
@@ -45,7 +45,7 @@ class RecitersScreen extends ConsumerWidget {
                       fontFamily: fontBody,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                 ],
               ),
             ),

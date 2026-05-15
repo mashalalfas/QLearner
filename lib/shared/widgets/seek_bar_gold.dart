@@ -112,7 +112,7 @@ class _SeekBarGoldState extends State<SeekBarGold> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.goldStart.withOpacity(0.5),
+                        color: AppColors.goldStart.withValues(alpha: 0.5),
                         blurRadius: 8,
                         spreadRadius: 0,
                       ),

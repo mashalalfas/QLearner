@@ -32,7 +32,7 @@ class SurahCard extends StatelessWidget {
               Container(
                 width: 48,
                 height: 48,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppTheme.lavender,
                   shape: BoxShape.circle,
                 ),
@@ -75,12 +75,12 @@ class SurahCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.accentPurple.withOpacity(0.1),
+                            color: AppTheme.accentPurple.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             '${surah.ayahCount} ayahs',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: AppTheme.accentPurple,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,

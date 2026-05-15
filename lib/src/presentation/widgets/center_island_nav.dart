@@ -96,7 +96,7 @@ class _GlassBottomBar extends StatelessWidget {
         child: Container(
           height: barHeight + 32,
           decoration: BoxDecoration(
-            color: CottonCloudTheme.glassWhite.withOpacity(0.6),
+            color: CottonCloudTheme.glassWhite.withValues(alpha: 0.6),
             border: const Border(
               top: BorderSide(
                 color: CottonCloudTheme.hairlineBorder,
@@ -229,15 +229,15 @@ class _FloatingIslandState extends State<_FloatingIsland>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: CottonCloudTheme.mint.withOpacity(
-                    widget.isActive ? _glowAnimation.value : 0.45,
+                  color: CottonCloudTheme.mint.withValues(
+                    alpha: widget.isActive ? _glowAnimation.value : 0.45,
                   ),
                   blurRadius: widget.isActive ? 36 : 24,
                   spreadRadius: 0,
                 ),
               ],
               border: Border.all(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 width: 5,
               ),
             ),

@@ -1,4 +1,4 @@
-/// Data layer barrel export
+// Data layer barrel export
 export 'models/models.dart';
 export 'repositories/quran_repository_impl.dart';
 export 'repositories/bookmark_service_impl.dart';

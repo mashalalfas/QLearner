@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/surah.dart';
 import '../../../core/services/quran_repository.dart';
@@ -23,6 +24,7 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
   final AudioPlayerService _audioPlayer;
   List<Surah> _allSurahs = [];
   StreamSubscription<PlayerState>? _playerStateSubscription;
+  Timer? _navigationTimeout;
 
   CurrentSurahNotifier(this._repository, this._audioPlayer) : super(null) {
     // Auto-play next surah when the current one finishes.
@@ -31,11 +33,9 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
         if (state.state == PlayerStateEnum.completed && canGoNext && !_isNavigating) {
           playNext();
         }
-        // Clear _isLoading as soon as audio starts playing.
-        // This fires for every transition to PlayerStateEnum.playing — including
-        // when a surah first starts streaming after prev/next navigation.
         if (state.state == PlayerStateEnum.playing) {
-          _setLoading(false);
+          _cancelNavigationTimeout();
+          setLoading(false);
           _isNavigating = false; // unlock navigation
         }
       },
@@ -44,18 +44,42 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
 
   @override
   void dispose() {
+    _cancelNavigationTimeout();
     _playerStateSubscription?.cancel();
     super.dispose();
   }
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+  void setLoading(bool v) { _isLoading = v; }
+  // kept for internal backward-compat
   void _setLoading(bool v) { _isLoading = v; }
 
   /// Guards against concurrent navigation (rapid Next/Prev taps).
   /// While true, canGoPrev/canGoNext report false to disable buttons.
   bool _isNavigating = false;
   bool get isNavigating => _isNavigating;
+
+  /// Starts (or restarts) a 10-second safety-net timer that force-clears
+  /// [_isNavigating] if the audio player never fires a `playing` event.
+  /// Covers the case where the stream silently fails and the lock would
+  /// otherwise remain stuck forever.
+  void _resetNavigationTimeout() {
+    _cancelNavigationTimeout();
+    _navigationTimeout = Timer(const Duration(seconds: 10), () {
+      if (_isNavigating) {
+        debugPrint('[currentSurahProvider] nav timeout — force-clearing _isNavigating');
+        _isNavigating = false;
+        _setLoading(false);
+        _navigationTimeout = null;
+      }
+    });
+  }
+
+  void _cancelNavigationTimeout() {
+    _navigationTimeout?.cancel();
+    _navigationTimeout = null;
+  }
 
   /// Initializes the notifier by loading all 114 surahs.
   /// Safe to call multiple times (no-op after first).
@@ -81,23 +105,20 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
   /// - Updates state (triggers UI rebuild via provider watch).
   /// - Plays audio.
   Future<void> loadSurah(String surahId) async {
+    _resetNavigationTimeout(); // 10 s safety net: force-unlock if audio never plays
     await ensureSurahsLoaded();
-    // NOTE: _isLoading is managed by the CALLER (playNext/playPrevious).
-    // loadSurah() does NOT set _isLoading — only playNext() and playPrevious() do,
-    // so the waveform stays visible for the full duration of the async operation.
-    try {
-      final surah = await _repository.getSurah(surahId);
-      final audioUrl = surah.audioUrl;
-      if (audioUrl == null || audioUrl.isEmpty) {
-        throw Exception('No audio available for surah $surahId');
-      }
-
-      state = surah;
-      await _audioPlayer.play(audioUrl);
-    } catch (e) {
-      // Rethrow so callers know about audio failures
-      rethrow;
+    final surah = await _repository.getSurah(surahId);
+    final audioUrl = surah.audioUrl;
+    if (audioUrl == null || audioUrl.isEmpty) {
+      throw Exception('No audio available for surah $surahId');
     }
+
+    state = surah;
+    // Defensive check — state must be non-null after assignment
+    if (state == null) {
+      throw Exception('Failed to set current surah to $surahId — state is still null');
+    }
+    await _audioPlayer.play(audioUrl);
   }
 
   /// Play the next surah if possible (surahId < 114).

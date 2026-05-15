@@ -1,4 +1,4 @@
-/// Features module barrel export
+// Features module barrel export
 export 'home/home.dart';
 export 'player/player.dart';
 export 'read/read.dart';
