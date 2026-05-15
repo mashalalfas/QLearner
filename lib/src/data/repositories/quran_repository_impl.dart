@@ -12,10 +12,19 @@ class QuranRepositoryImpl implements QuranRepository {
   @override
   Future<List<Surah>> getAllSurahs() async {
     final surahs = <Surah>[];
+    int failures = 0;
 
     for (int i = 1; i <= 114; i++) {
-      final surah = await getSurah(i.toString());
-      surahs.add(surah);
+      try {
+        final surah = await getSurah(i.toString());
+        surahs.add(surah);
+      } catch (e) {
+        failures++;
+      }
+    }
+
+    if (surahs.isEmpty) {
+      throw Exception('Failed to load any surahs (114/114 failed)');
     }
 
     return surahs;

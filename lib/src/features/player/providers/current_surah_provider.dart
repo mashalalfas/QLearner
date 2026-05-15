@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/surah.dart';
 import '../../../core/services/quran_repository.dart';
@@ -21,8 +22,28 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
   final QuranRepository _repository;
   final AudioPlayerService _audioPlayer;
   List<Surah> _allSurahs = [];
+  StreamSubscription<PlayerState>? _playerStateSubscription;
 
-  CurrentSurahNotifier(this._repository, this._audioPlayer) : super(null);
+  CurrentSurahNotifier(this._repository, this._audioPlayer) : super(null) {
+    // Auto-play next surah when the current one finishes.
+    _playerStateSubscription = _audioPlayer.playerStateStream.listen(
+      (state) {
+        if (state.state == PlayerStateEnum.completed && canGoNext) {
+          playNext();
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _playerStateSubscription?.cancel();
+    super.dispose();
+  }
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+  void _setLoading(bool v) { _isLoading = v; }
 
   /// Initializes the notifier by loading all 114 surahs.
   /// Safe to call multiple times (no-op after first).
@@ -49,15 +70,19 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
   /// - Plays audio.
   Future<void> loadSurah(String surahId) async {
     await ensureSurahsLoaded();
+    _setLoading(true);
+    try {
+      final surah = await _repository.getSurah(surahId);
+      final audioUrl = surah.audioUrl;
+      if (audioUrl == null || audioUrl.isEmpty) {
+        throw Exception('No audio available for surah $surahId');
+      }
 
-    final surah = await _repository.getSurah(surahId);
-    final audioUrl = surah.audioUrl;
-    if (audioUrl == null || audioUrl.isEmpty) {
-      throw Exception('No audio available for surah $surahId');
+      state = surah;
+      await _audioPlayer.play(audioUrl);
+    } finally {
+      _setLoading(false);
     }
-
-    state = surah;
-    await _audioPlayer.play(audioUrl);
   }
 
   /// Play the next surah if possible (surahId < 114).
@@ -68,8 +93,13 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
     if (idx < 0 || idx >= _allSurahs.length - 1) return null; // at last surah or none
 
     final nextSurah = _allSurahs[idx + 1];
-    await loadSurah(nextSurah.surahId);
-    return nextSurah;
+    _setLoading(true);
+    try {
+      await loadSurah(nextSurah.surahId);
+      return nextSurah;
+    } finally {
+      _setLoading(false);
+    }
   }
 
   /// Play the previous surah if possible (surahId > 1).

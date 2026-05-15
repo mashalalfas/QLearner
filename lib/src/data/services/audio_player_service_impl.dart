@@ -131,10 +131,6 @@ class AudioPlayerServiceImpl extends AudioPlayerService {
       await h.stop();
 
       final surahId = _extractSurahId(url);
-      if (surahId != null) {
-        _currentSurahId = surahId;
-        _surahIdController.add(surahId);
-      }
 
       final item = asvc.MediaItem(
         id: surahId ?? '',
@@ -147,6 +143,13 @@ class AudioPlayerServiceImpl extends AudioPlayerService {
       print('[AudioPlayer] calling playFromUrl...');
       await h.playFromUrl(url, mediaItem: item, startMs: startMs);
       print('[AudioPlayer] playFromUrl completed');
+
+      // Update _currentSurahId AFTER playFromUrl so the MediaItem listener
+      // always fires with the new ID (even when re-loading the same surah).
+      if (surahId != null) {
+        _currentSurahId = surahId;
+        _surahIdController.add(surahId);
+      }
 
       if (startMs != null) await seek(startMs);
     } catch (e) {

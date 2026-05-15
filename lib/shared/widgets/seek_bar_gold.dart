@@ -75,12 +75,14 @@ class _SeekBarGoldState extends State<SeekBarGold> {
                   ),
                 ),
               ),
-              // Draggable thumb (invisible full-width slider for interaction)
+              // Draggable thumb (invisible slider, constrained to track width only)
               if (widget.onChanged != null)
-                Positioned.fill(
+                Container(
+                  width: trackWidth,
+                  alignment: Alignment.centerLeft,
                   child: SliderTheme(
                     data: SliderThemeData(
-                      trackHeight: widget.height + 20,
+                      trackHeight: widget.height,
                       trackShape: const RectangularSliderTrackShape(),
                       thumbShape: SliderComponentShape.noThumb,
                       overlayShape: SliderComponentShape.noOverlay,

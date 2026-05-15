@@ -31,6 +31,7 @@ class PlayerScreen extends ConsumerWidget {
     // Watch the single source of truth for the currently playing surah
     final currentSurah = ref.watch(currentSurahProvider);
     final currentSurahNotifier = ref.read(currentSurahProvider.notifier);
+    final isLoading = currentSurahNotifier.isLoading;
 
     final playerStateAsync = ref.watch(playerStateProvider);
     final positionAsync = ref.watch(positionProvider);
@@ -42,103 +43,108 @@ class PlayerScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment.center,
-            radius: 1.0,
-            colors: [
-              Color(0x26C9A84C),
-              AppColors.bgBase,
-            ],
-            stops: [0.0, 0.7],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _PlayerSurahNumber(surahNumber: displayNumber),
+      body: SafeArea(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment.center,
+                radius: 1.0,
+                colors: [
+                  Color(0x26C9A84C),
+                  AppColors.bgBase,
+                ],
+                stops: [0.0, 0.7],
+              ),
+            ),
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    _PlayerSurahNumber(surahNumber: displayNumber),
 
-              const Spacer(flex: 2),
+                    const Spacer(flex: 2),
 
-              _PlayerCircle(arabicName: displayArabic),
+                    _PlayerCircle(arabicName: displayArabic),
 
-              const Spacer(flex: 2),
+                    const Spacer(flex: 2),
 
-              Text(
-                displayTitle,
-                style: playerEnglish.copyWith(
-                  color: AppColors.textWhite,
+                    Text(
+                      displayTitle,
+                      style: playerEnglish.copyWith(
+                        color: AppColors.textWhite,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Controls row: Prev | Play/Pause | Next
+                    _PlayerControls(
+                      playerStateAsync: playerStateAsync,
+                      onPrev: currentSurahNotifier.canGoPrev
+                          ? () async {
+                              await currentSurahNotifier.playPrevious();
+                            }
+                          : null,
+                      onPlay: () async {
+                        final state = playerStateAsync.value;
+                        if (state?.isPlaying == true) {
+                          await ref.read(audioPlayerProvider).pause();
+                        } else {
+                          await ref.read(audioPlayerProvider).resume();
+                        }
+                      },
+                      onNext: currentSurahNotifier.canGoNext
+                          ? () async {
+                              await currentSurahNotifier.playNext();
+                            }
+                          : null,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    _PlayerSeekBar(
+                      playerStateAsync: playerStateAsync,
+                      positionAsync: positionAsync,
+                      onSeek: (positionMs) {
+                        ref.read(audioPlayerProvider).seek(positionMs);
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    _PlayerMeta(
+                      playerStateAsync: playerStateAsync,
+                      positionAsync: positionAsync,
+                      onSave: () async {
+                        final positionMs = positionAsync.value ?? 0;
+                        final bookmark = Bookmark.create(
+                          surahId: displayNumber,
+                          verseId: 1,
+                          positionMs: positionMs,
+                        );
+                        final messenger = ScaffoldMessenger.of(context);
+                        final bookmarkService = ref.read(bookmarkServiceProvider);
+                        await bookmarkService.addBookmark(bookmark);
+                        ref.invalidate(bookmarksProvider);
+                        if (context.mounted) {
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Bookmark saved')),
+                          );
+                        }
+                      },
+                    ),
+
+                    const Spacer(flex: 3),
+                  ],
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-
-              const SizedBox(height: 32),
-
-              // Controls row: Prev | Play/Pause | Next
-              _PlayerControls(
-                playerStateAsync: playerStateAsync,
-                onPrev: currentSurahNotifier.canGoPrev
-                    ? () async {
-                        await currentSurahNotifier.playPrevious();
-                      }
-                    : null,
-                onPlay: () async {
-                  final state = playerStateAsync.value;
-                  if (state?.isPlaying == true) {
-                    await ref.read(audioPlayerProvider).pause();
-                  } else {
-                    await ref.read(audioPlayerProvider).resume();
-                  }
-                },
-                onNext: currentSurahNotifier.canGoNext
-                    ? () async {
-                        await currentSurahNotifier.playNext();
-                      }
-                    : null,
-              ),
-
-              const SizedBox(height: 24),
-
-              _PlayerSeekBar(
-                playerStateAsync: playerStateAsync,
-                positionAsync: positionAsync,
-                onSeek: (positionMs) {
-                  ref.read(audioPlayerProvider).seek(positionMs);
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              _PlayerMeta(
-                playerStateAsync: playerStateAsync,
-                positionAsync: positionAsync,
-                onSave: () async {
-                  final positionMs = positionAsync.value ?? 0;
-                  final bookmark = Bookmark.create(
-                    surahId: displayNumber,
-                    verseId: 1,
-                    positionMs: positionMs,
-                  );
-                  final messenger = ScaffoldMessenger.of(context);
-                  final bookmarkService = ref.read(bookmarkServiceProvider);
-                  await bookmarkService.addBookmark(bookmark);
-                  ref.invalidate(bookmarksProvider);
-                  if (context.mounted) {
-                    messenger.showSnackBar(
-                      const SnackBar(content: Text('Bookmark saved')),
-                    );
-                  }
-                },
-              ),
-
-              const Spacer(flex: 3),
-            ],
+                if (isLoading) const _LoadingOverlay(),
+              ],
+            ),
           ),
         ),
-      ),
     );
   }
 }
@@ -489,5 +495,97 @@ class _PlayerMeta extends StatelessWidget {
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+}
+
+/// Loading overlay shown when switching surahs (3–5 s gap).
+/// Gold waveform bars — no external dependencies.
+class _LoadingOverlay extends StatelessWidget {
+  const _LoadingOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: Container(
+        color: AppColors.bgBase.withValues(alpha: 0.88),
+        child: const Center(
+          child: _WaveformAnimation(),
+        ),
+      ),
+    );
+  }
+}
+
+/// 5-bar waveform animation — each bar oscillates independently on a
+/// 700 ms sine wave, staggered 120 ms apart so they look like audio.
+class _WaveformAnimation extends StatelessWidget {
+  const _WaveformAnimation();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        _WaveformBar(delayMs: 0),
+        SizedBox(width: 6),
+        _WaveformBar(delayMs: 120),
+        SizedBox(width: 6),
+        _WaveformBar(delayMs: 240),
+        SizedBox(width: 6),
+        _WaveformBar(delayMs: 360),
+        SizedBox(width: 6),
+        _WaveformBar(delayMs: 480),
+      ],
+    );
+  }
+}
+
+class _WaveformBar extends StatefulWidget {
+  final int delayMs;
+  const _WaveformBar({required this.delayMs});
+
+  @override
+  State<_WaveformBar> createState() => _WaveformBarState();
+}
+
+class _WaveformBarState extends State<_WaveformBar>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      duration: const Duration(milliseconds: 700),
+      vsync: this,
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final delayed = CurvedAnimation(
+      parent: _ctrl,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeInOut),
+    );
+    return AnimatedBuilder(
+      animation: delayed,
+      builder: (_, __) {
+        final h = 8.0 + 24.0 * delayed.value;
+        return Container(
+          width: 5,
+          height: h,
+          decoration: BoxDecoration(
+            color: AppColors.goldStart,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        );
+      },
+    );
   }
 }
