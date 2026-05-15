@@ -28,14 +28,15 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
     // Auto-play next surah when the current one finishes.
     _playerStateSubscription = _audioPlayer.playerStateStream.listen(
       (state) {
-        if (state.state == PlayerStateEnum.completed && canGoNext) {
+        if (state.state == PlayerStateEnum.completed && canGoNext && !_isNavigating) {
           playNext();
         }
         // Clear _isLoading as soon as audio starts playing.
         // This fires for every transition to PlayerStateEnum.playing — including
         // when a surah first starts streaming after prev/next navigation.
-        if (state.state == PlayerStateEnum.playing && _isLoading) {
+        if (state.state == PlayerStateEnum.playing) {
           _setLoading(false);
+          _isNavigating = false; // unlock navigation
         }
       },
     );
@@ -50,6 +51,11 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
   void _setLoading(bool v) { _isLoading = v; }
+
+  /// Guards against concurrent navigation (rapid Next/Prev taps).
+  /// While true, canGoPrev/canGoNext report false to disable buttons.
+  bool _isNavigating = false;
+  bool get isNavigating => _isNavigating;
 
   /// Initializes the notifier by loading all 114 surahs.
   /// Safe to call multiple times (no-op after first).
@@ -95,51 +101,56 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
   }
 
   /// Play the next surah if possible (surahId < 114).
-  /// Returns the loaded Surah on success, null if at boundary.
+  /// Returns the loaded Surah on success, null if at boundary or while navigation is in-flight.
   Future<Surah?> playNext() async {
+    if (_isNavigating) return null;
     await ensureSurahsLoaded();
     final idx = _currentIndex;
     if (idx < 0 || idx >= _allSurahs.length - 1) return null;
 
     final nextSurah = _allSurahs[idx + 1];
+    _isNavigating = true;
     _setLoading(true);
     try {
       await loadSurah(nextSurah.surahId);
       return nextSurah;
     } catch (_) {
       _setLoading(false);
+      _isNavigating = false;
       rethrow;
     }
-    // NOTE: _setLoading(false) is NOT in finally.
-    // It is driven by PlayerStateEnum.playing from the playerStateStream listener
-    // in the AudioPlayerService — this ensures the waveform stays visible
-    // for the entire buffering phase and clears only when audio actually starts.
+    // _isNavigating = false is set by the playerStateStream listener
+    // when PlayerStateEnum.playing fires — this holds the lock for the
+    // full duration of the async chain (buffering + ready).
   }
 
   /// Play the previous surah if possible (surahId > 1).
-  /// Returns the loaded Surah on success, null if at boundary.
+  /// Returns the loaded Surah on success, null if at boundary or while navigation is in-flight.
   Future<Surah?> playPrevious() async {
+    if (_isNavigating) return null;
     await ensureSurahsLoaded();
     final idx = _currentIndex;
     if (idx <= 0) return null;
 
     final prevSurah = _allSurahs[idx - 1];
+    _isNavigating = true;
     _setLoading(true);
     try {
       await loadSurah(prevSurah.surahId);
       return prevSurah;
     } catch (_) {
       _setLoading(false);
+      _isNavigating = false;
       rethrow;
     }
-    // Same note: _setLoading(false) driven by PlayerStateEnum.playing from stream.
+    // Same: _isNavigating cleared by playerStateStream on 'playing'.
   }
 
-  /// Whether prev navigation is allowed (not at surah 1 and a surah is selected).
-  bool get canGoPrev => _currentIndex > 0;
+  /// Whether prev navigation is allowed (not at surah 1, a surah is selected, and no navigation in-flight).
+  bool get canGoPrev => !_isNavigating && _currentIndex > 0;
 
-  /// Whether next navigation is allowed (not at surah 114 and a surah is selected).
-  bool get canGoNext => _currentIndex >= 0 && _currentIndex < _allSurahs.length - 1;
+  /// Whether next navigation is allowed (not at surah 114, a surah is selected, and no navigation in-flight).
+  bool get canGoNext => !_isNavigating && _currentIndex >= 0 && _currentIndex < _allSurahs.length - 1;
 
   /// Returns the surah number (1-114) of the currently selected surah, or null.
   int? get currentSurahNumber {
