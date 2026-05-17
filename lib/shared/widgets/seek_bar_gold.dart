@@ -76,36 +76,57 @@ class _SeekBarGoldState extends State<SeekBarGold> {
               ),
             ),
           ),
-          // Draggable thumb (Slider handles gestures + visual gold thumb)
+          // Draggable thumb with gesture detection
           if (widget.onChanged != null)
-            SliderTheme(
-              data: SliderThemeData(
-                trackHeight: trackHeight,
-                trackShape: const RectangularSliderTrackShape(),
-                thumbShape: const RoundSliderThumbShape(
-                  enabledThumbRadius: thumbRadius,
-                ),
-                overlayShape: const RoundSliderOverlayShape(
-                  overlayRadius: thumbRadius + 4,
-                ),
-                thumbColor: AppColors.goldEnd,
-                activeTrackColor: Colors.transparent,
-                inactiveTrackColor: Colors.transparent,
-              ),
-              child: Slider(
-                value: _currentValue,
-                min: 0.0,
-                max: 1.0,
-                onChanged: (val) {
-                  setState(() => _currentValue = val);
-                  widget.onChanged?.call(val);
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onPanStart: (_) => setState(() => _isDragging = true),
+                onPanUpdate: (details) {
+                  final box = context.findRenderObject() as RenderBox;
+                  final localX = box.globalToLocal(details.globalPosition).dx;
+                  // Track is centered horizontally
+                  final trackWidth = box.size.width * 0.9;
+                  final trackLeft = (box.size.width - trackWidth) / 2;
+                  final relativeX = (localX - trackLeft).clamp(0.0, trackWidth);
+                  final newValue = relativeX / trackWidth;
+                  
+                  setState(() {
+                    _isDragging = true;
+                    _currentValue = newValue;
+                  });
                 },
-                onChangeStart: (_) {
-                  setState(() => _isDragging = true);
-                },
-                onChangeEnd: (val) {
+                onPanEnd: (details) {
+                  widget.onChanged?.call(_currentValue);
                   setState(() => _isDragging = false);
                 },
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Thumb glow
+                    Container(
+                      width: thumbRadius * 2 + 8,
+                      height: thumbRadius * 2 + 8,
+                      decoration: BoxDecoration(
+                        color: AppColors.goldEnd.withValues(alpha: 0.3),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    // Thumb
+                    Container(
+                      width: thumbRadius * 2,
+                      height: thumbRadius * 2,
+                      decoration: BoxDecoration(
+                        color: AppColors.goldEnd,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.goldStart,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
         ],
