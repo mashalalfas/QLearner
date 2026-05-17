@@ -110,14 +110,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         )
                       : surahs.isEmpty
                           ? const _EmptyState()
-                          : _SurahGrid(
-                              surahs: surahs,
-                              onSurahTap: _onSurahTap,
+                          : GridView.builder(
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: gridColumns,
+                                mainAxisSpacing: gridGap,
+                                crossAxisSpacing: gridGap,
+                                childAspectRatio: 0.85,
+                              ),
+                              itemCount: surahs.length,
+                              itemBuilder: (context, index) {
+                                final surah = surahs[index];
+                                return _SurahCard(surah: surah, onTap: _onSurahTap);
+                              },
+                              padding: EdgeInsets.zero,
                             ),
             ),
 
-            // Bottom padding for nav bar
-            const SizedBox(height: screenPaddingBottom),
+            // Bottom padding for nav bar (system UI)
+            SizedBox(height: MediaQuery.of(context).viewPadding.bottom + 16),
           ],
         ),
       ),
