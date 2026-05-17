@@ -24,6 +24,7 @@ class SeekBarGold extends StatefulWidget {
 
 class _SeekBarGoldState extends State<SeekBarGold> {
   late double _currentValue;
+  bool _isDragging = false;
 
   @override
   void initState() {
@@ -34,7 +35,8 @@ class _SeekBarGoldState extends State<SeekBarGold> {
   @override
   void didUpdateWidget(covariant SeekBarGold oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value) {
+    // Only sync from parent stream when NOT dragging
+    if (!_isDragging && oldWidget.value != widget.value) {
       _currentValue = widget.value;
     }
   }
@@ -97,6 +99,12 @@ class _SeekBarGoldState extends State<SeekBarGold> {
                 onChanged: (val) {
                   setState(() => _currentValue = val);
                   widget.onChanged?.call(val);
+                },
+                onChangeStart: (_) {
+                  setState(() => _isDragging = true);
+                },
+                onChangeEnd: (val) {
+                  setState(() => _isDragging = false);
                 },
               ),
             ),
