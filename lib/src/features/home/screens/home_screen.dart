@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,36 +41,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   /// Called when a surah card is tapped.
-  /// Uses [currentSurahProvider] as the single source of truth:
-  /// 1. If tapped surah matches the currently playing one, just open the player (no restart).
-  /// 2. Otherwise loadSurah fetches the Surah and starts playback.
+  /// Fires-and-forgets audio loading so navigation is instant.
   Future<void> _onSurahTap(BuildContext context, Surah surah) async {
     if (_isPushingPlayer) return;
-    final current = ref.read(currentSurahProvider);
-    final isAlreadyPlaying = current != null && current.surahId == surah.surahId;
-
-    final messenger = ScaffoldMessenger.of(context);
+    _isPushingPlayer = true;
     try {
-      _isPushingPlayer = true;
-      if (!isAlreadyPlaying) {
-        await ref.read(currentSurahProvider.notifier).loadSurah(surah.surahId);
-      }
-      if (!context.mounted) return;
-      if (!isAlreadyPlaying) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('Playing ${surah.englishName}…'),
-            duration: const Duration(milliseconds: 800),
-          ),
-        );
-      }
+      unawaited(ref.read(currentSurahProvider.notifier).loadSurah(surah.surahId));
       if (!context.mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => PlayerScreen(surahId: surah.surahId)),
       );
     } catch (e) {
       if (context.mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
       }
     } finally {
       _isPushingPlayer = false;
