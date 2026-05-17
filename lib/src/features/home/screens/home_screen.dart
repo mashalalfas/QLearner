@@ -19,6 +19,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+  bool _isPushingPlayer = false;
 
   @override
   void initState() {
@@ -43,11 +44,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// 1. If tapped surah matches the currently playing one, just open the player (no restart).
   /// 2. Otherwise loadSurah fetches the Surah and starts playback.
   Future<void> _onSurahTap(BuildContext context, Surah surah) async {
+    if (_isPushingPlayer) return;
     final current = ref.read(currentSurahProvider);
     final isAlreadyPlaying = current != null && current.surahId == surah.surahId;
 
     final messenger = ScaffoldMessenger.of(context);
     try {
+      _isPushingPlayer = true;
       if (!isAlreadyPlaying) {
         await ref.read(currentSurahProvider.notifier).loadSurah(surah.surahId);
       }
@@ -68,6 +71,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (context.mounted) {
         messenger.showSnackBar(SnackBar(content: Text('Error: $e')));
       }
+    } finally {
+      _isPushingPlayer = false;
     }
   }
 
