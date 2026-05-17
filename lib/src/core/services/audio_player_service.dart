@@ -4,7 +4,7 @@ abstract class AudioPlayerService {
   Future<void> initialize();
 
   /// Play audio from a given URL
-  Future<void> play(String url, {int? startMs, int? endMs});
+  Future<void> play(String url, {int? startMs, int? endMs, String? surahName, String? surahArabic});
 
   /// Pause playback
   Future<void> pause();

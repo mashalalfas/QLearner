@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:qlearner/core/theme/app_colors.dart';
-import 'package:qlearner/core/theme/app_spacing.dart';
 
-/// A custom seek bar (slider) with gold gradient fill and a gold dot indicator.
+/// A custom seek bar (slider) with gold gradient fill and a gold thumb
+/// indicator.
 ///
 /// Features:
 /// - Gold gradient fill (goldStart → goldEnd)
-/// - Gold dot indicator with glow effect
+/// - Gold thumb indicator with subtle glow
 /// - Customizable value and onChanged callback
 class SeekBarGold extends StatefulWidget {
   final double value; // 0.0 to 1.0
   final ValueChanged<double>? onChanged;
-  final double height;
-  final double dotSize;
 
   const SeekBarGold({
     super.key,
     required this.value,
     this.onChanged,
-    this.height = seekBarHeight,
-    this.dotSize = seekBarDotSize,
   });
 
   @override
@@ -45,85 +41,67 @@ class _SeekBarGoldState extends State<SeekBarGold> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final trackWidth = constraints.maxWidth;
-        final dotPosition = _currentValue * (trackWidth - widget.dotSize);
+    const double trackHeight = 6.0;
+    const double thumbRadius = 12.0;
 
-        return SizedBox(
-          height: widget.dotSize + 8,
-          child: Stack(
-            alignment: Alignment.centerLeft,
-            children: [
-              // Track background
-              Container(
-                width: double.infinity,
-                height: widget.height,
-                decoration: BoxDecoration(
-                  color: AppColors.bgCardDark,
-                  borderRadius: BorderRadius.circular(widget.height / 2),
-                ),
+    return SizedBox(
+      height: thumbRadius * 2 + 12, // 36px — ample room for 24px thumb
+      child: Stack(
+        alignment: Alignment.centerLeft,
+        children: [
+          // Track background
+          Center(
+            child: Container(
+              width: double.infinity,
+              height: trackHeight,
+              decoration: BoxDecoration(
+                color: AppColors.bgCardDark,
+                borderRadius: BorderRadius.circular(trackHeight / 2),
               ),
-              // Filled portion with gold gradient
-              FractionallySizedBox(
-                widthFactor: _currentValue,
-                child: Container(
-                  height: widget.height,
-                  decoration: const BoxDecoration(
-                    gradient: AppColors.goldGradient,
-                    borderRadius: BorderRadius.all(Radius.circular(2)),
-                  ),
-                ),
-              ),
-              // Draggable thumb (invisible slider, constrained to track width only)
-              if (widget.onChanged != null)
-                Container(
-                  width: trackWidth,
-                  alignment: Alignment.centerLeft,
-                  child: SliderTheme(
-                    data: SliderThemeData(
-                      trackHeight: widget.height,
-                      trackShape: const RectangularSliderTrackShape(),
-                      thumbShape: SliderComponentShape.noThumb,
-                      overlayShape: SliderComponentShape.noOverlay,
-                      activeTrackColor: Colors.transparent,
-                      inactiveTrackColor: Colors.transparent,
-                    ),
-                    child: Slider(
-                      value: _currentValue,
-                      min: 0.0,
-                      max: 1.0,
-                      onChanged: (val) {
-                        setState(() => _currentValue = val);
-                        widget.onChanged?.call(val);
-                      },
-                    ),
-                  ),
-                ),
-              // Gold dot indicator
-              Positioned(
-                left: dotPosition,
-                top: (widget.dotSize + 8 - widget.dotSize) / 2,
-                child: Container(
-                  width: widget.dotSize,
-                  height: widget.dotSize,
-                  decoration: BoxDecoration(
-                    color: AppColors.goldEnd,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.goldStart.withValues(alpha: 0.5),
-                        blurRadius: 8,
-                        spreadRadius: 0,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        );
-      },
+          // Filled portion with gold gradient
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FractionallySizedBox(
+              widthFactor: _currentValue,
+              child: Container(
+                height: trackHeight,
+                decoration: const BoxDecoration(
+                  gradient: AppColors.goldGradient,
+                  borderRadius: BorderRadius.all(Radius.circular(2)),
+                ),
+              ),
+            ),
+          ),
+          // Draggable thumb (Slider handles gestures + visual gold thumb)
+          if (widget.onChanged != null)
+            SliderTheme(
+              data: SliderThemeData(
+                trackHeight: trackHeight,
+                trackShape: const RectangularSliderTrackShape(),
+                thumbShape: const RoundSliderThumbShape(
+                  enabledThumbRadius: thumbRadius,
+                ),
+                overlayShape: const RoundSliderOverlayShape(
+                  overlayRadius: thumbRadius + 4,
+                ),
+                thumbColor: AppColors.goldEnd,
+                activeTrackColor: Colors.transparent,
+                inactiveTrackColor: Colors.transparent,
+              ),
+              child: Slider(
+                value: _currentValue,
+                min: 0.0,
+                max: 1.0,
+                onChanged: (val) {
+                  setState(() => _currentValue = val);
+                  widget.onChanged?.call(val);
+                },
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

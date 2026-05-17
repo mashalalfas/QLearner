@@ -118,7 +118,7 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
     if (state == null) {
       throw Exception('Failed to set current surah to $surahId — state is still null');
     }
-    await _audioPlayer.play(audioUrl);
+    await _audioPlayer.play(audioUrl, surahName: surah.name, surahArabic: surah.name);
   }
 
   /// Play the next surah if possible (surahId < 114).
@@ -172,6 +172,22 @@ class CurrentSurahNotifier extends StateNotifier<Surah?> {
 
   /// Whether next navigation is allowed (not at surah 114, a surah is selected, and no navigation in-flight).
   bool get canGoNext => !_isNavigating && _currentIndex >= 0 && _currentIndex < _allSurahs.length - 1;
+
+  /// Returns the next [count] surahs from the current position (max 10).
+  /// Returns empty list if at end or no surah selected.
+  List<Surah> getUpcomingSurahs({int count = 10}) {
+    if (_currentIndex < 0 || _currentIndex >= _allSurahs.length - 1) return [];
+    final end = (_currentIndex + 1 + count).clamp(0, _allSurahs.length);
+    return _allSurahs.sublist(_currentIndex + 1, end);
+  }
+
+  /// Returns the previous [count] surahs before the current position (max 10).
+  /// Returns empty list if at start or no surah selected.
+  List<Surah> getPreviousSurahs({int count = 10}) {
+    if (_currentIndex <= 0) return [];
+    final start = (_currentIndex - count).clamp(0, _currentIndex);
+    return _allSurahs.sublist(start, _currentIndex);
+  }
 
   /// Returns the surah number (1-114) of the currently selected surah, or null.
   int? get currentSurahNumber {

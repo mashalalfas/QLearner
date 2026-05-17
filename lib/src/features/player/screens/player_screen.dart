@@ -11,6 +11,8 @@ import 'package:qlearner/src/core/services/audio_player_service.dart';
 import 'package:qlearner/src/features/player/providers/player_providers.dart';
 import 'package:qlearner/src/features/player/providers/current_surah_provider.dart';
 import 'package:qlearner/src/data/models/bookmark.dart';
+import 'package:qlearner/src/data/models/surah.dart';
+import 'package:lottie/lottie.dart';
 
 /// Player screen — Dignity theme: premium black & gold with animated circle
 ///
@@ -113,6 +115,12 @@ class PlayerScreen extends ConsumerWidget {
                               }
                             }
                           : null,
+                      positionMs: positionAsync.value ??
+                          (playerStateAsync.value?.positionMs ?? 0),
+                      durationMs: playerStateAsync.value?.durationMs ?? 0,
+                      onSeek: (positionMs) {
+                        ref.read(audioPlayerProvider).seek(positionMs);
+                      },
                     ),
 
                     const SizedBox(height: 24),
@@ -284,12 +292,15 @@ class _AnimatedGlowCircleState extends State<_AnimatedGlowCircle>
 
 /// Controls row: text buttons only ("|< Prev" | "Play/Pause" | "Next |>")
 /// onPrev / onNext are nullable — null means the button is disabled.
-class _PlayerControls extends StatelessWidget {
+class _PlayerControls extends ConsumerStatefulWidget {
   final AsyncValue<PlayerState> playerStateAsync;
   final bool isLoading;
   final VoidCallback? onPrev;
   final VoidCallback onPlay;
   final VoidCallback? onNext;
+  final int positionMs;
+  final int durationMs;
+  final ValueChanged<int> onSeek;
 
   const _PlayerControls({
     required this.playerStateAsync,
@@ -297,7 +308,68 @@ class _PlayerControls extends StatelessWidget {
     this.onPrev,
     required this.onPlay,
     this.onNext,
+    required this.positionMs,
+    required this.durationMs,
+    required this.onSeek,
   });
+
+  @override
+  ConsumerState<_PlayerControls> createState() => _PlayerControlsState();
+}
+
+class _PlayerControlsState extends ConsumerState<_PlayerControls> {
+  OverlayEntry? _peekOverlay;
+
+  @override
+  void dispose() {
+    _dismissPeek();
+    super.dispose();
+  }
+
+  void _showPeek(BuildContext context, {required bool isNext}) {
+    final notifier = ref.read(currentSurahProvider.notifier);
+    final surahs = isNext ? notifier.getUpcomingSurahs() : notifier.getPreviousSurahs();
+    if (surahs.isEmpty) return;
+
+    final buttonContext = context;
+    final buttonBox = buttonContext.findRenderObject() as RenderBox?;
+    final overlay = Overlay.of(buttonContext);
+    if (buttonBox == null || overlay == null) return;
+
+    final buttonPos = buttonBox.localToGlobal(Offset.zero);
+    final buttonSize = buttonBox.size;
+    final screenW = MediaQuery.of(context).size.width;
+    final screenH = MediaQuery.of(context).size.height;
+
+    const panelW = _SurahPeekPanel.panelWidth;
+    const panelH = _SurahPeekPanel.panelHeight;
+    const gap = 8.0;
+
+    // Horizontal: center panel on button, clamp to screen edges
+    final panelLeft = (buttonPos.dx + buttonSize.width / 2 - panelW / 2).clamp(8.0, screenW - panelW - 8.0);
+    // Vertical: panel sits ABOVE the button
+    final panelTop = (buttonPos.dy - panelH - gap).clamp(8.0, screenH - panelH - 8.0);
+
+    _peekOverlay = OverlayEntry(
+      builder: (_) => _SurahPeekPanel(
+        surahs: surahs,
+        isNext: isNext,
+        panelTopLeft: Offset(panelLeft, panelTop),
+        onDismiss: _dismissPeek,
+        onTapSurah: (surah) {
+          _dismissPeek();
+          notifier.loadSurah(surah.surahId);
+        },
+      ),
+    );
+
+    overlay.insert(_peekOverlay!);
+  }
+
+  void _dismissPeek() {
+    _peekOverlay?.remove();
+    _peekOverlay = null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -305,74 +377,298 @@ class _PlayerControls extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Prev button — disabled when onPrev is null (first surah)
-        TextButton(
-          onPressed: onPrev,
-          style: TextButton.styleFrom(
-            foregroundColor: onPrev == null
-                ? AppColors.goldMuted.withValues(alpha: 0.35)
-                : AppColors.goldMuted,
-            textStyle: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+        GestureDetector(
+          onLongPressStart: (_) {
+            if (widget.onPrev != null) _showPeek(context, isNext: false);
+          },
+          child: IconButton(
+            icon: const Icon(Icons.skip_previous_rounded),
+            iconSize: 32,
+            onPressed: widget.onPrev,
+            disabledColor: AppColors.goldMuted.withValues(alpha: 0.35),
+            color: AppColors.goldStart,
+            
           ),
-          child: const Text('|< Prev'),
         ),
 
         const SizedBox(width: 32),
 
+        // Back 5 seconds button
+        _SeekBack5Button(
+          positionMs: widget.positionMs,
+          durationMs: widget.durationMs,
+          onSeek: widget.onSeek,
+        ),
+
         // Center: waveform when audio is buffering/loading, otherwise Play/Pause
-        playerStateAsync.when(
+        widget.playerStateAsync.when(
           data: (state) {
             if (state.state == PlayerStateEnum.buffering) {
-              return const _WaveformBar(delayMs: 0, size: 22);
+              return Lottie.asset(
+                'assets/loading.quran.json',
+                width: 48,
+                height: 48,
+                repeat: true,
+              );
             }
-            return TextButton(
-              onPressed: onPlay,
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.goldStart,
-                textStyle: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                ),
+            return IconButton(
+              icon: Icon(
+                state.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
               ),
-              child: Text(state.isPlaying ? 'Pause' : 'Play'),
+              iconSize: 36,
+              onPressed: widget.onPlay,
+              color: AppColors.goldStart,
+              tooltip: state.isPlaying ? 'Pause' : 'Play',
             );
           },
-                loading: () => const Text(
-                  '▶',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.goldStart,
-                  ),
-                ),
-                error: (_, __) => TextButton(
-                  onPressed: onPlay,
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.goldMuted,
-                  ),
-                  child: const Text('Play'),
-                ),
-              ),
+          loading: () => const Text(
+            '▶',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: AppColors.goldStart,
+            ),
+          ),
+          error: (_, __) => IconButton(
+            icon: const Icon(Icons.play_arrow_rounded),
+            iconSize: 36,
+            onPressed: widget.onPlay,
+            color: AppColors.goldMuted,
+            tooltip: 'Play',
+          ),
+        ),
+
+        // Forward 5 seconds button
+        _SeekForward5Button(
+          positionMs: widget.positionMs,
+          durationMs: widget.durationMs,
+          onSeek: widget.onSeek,
+        ),
 
         const SizedBox(width: 32),
 
         // Next button — disabled when onNext is null (last surah)
-        TextButton(
-          onPressed: onNext,
-          style: TextButton.styleFrom(
-            foregroundColor: onNext == null
-                ? AppColors.goldMuted.withValues(alpha: 0.35)
-                : AppColors.goldMuted,
-            textStyle: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+        GestureDetector(
+          onLongPressStart: (_) {
+            if (widget.onNext != null) _showPeek(context, isNext: true);
+          },
+          child: IconButton(
+            icon: const Icon(Icons.skip_next_rounded),
+            iconSize: 32,
+            onPressed: widget.onNext,
+            disabledColor: AppColors.goldMuted.withValues(alpha: 0.35),
+            color: AppColors.goldStart,
+            
           ),
-          child: const Text('Next |>'),
         ),
       ],
+    );
+  }
+}
+
+/// Floating peek overlay that shows up to 10 upcoming (or previous) surahs
+/// anchored above the prev/next button. Tapping a surah navigates to it;
+/// tapping the backdrop dismisses the panel.
+class _SurahPeekPanel extends StatelessWidget {
+  static const double panelWidth = 300;
+  static const double panelHeight = 392; // (7 * 56) + 48
+
+  final List<Surah> surahs;
+  final bool isNext;
+  final Offset panelTopLeft;
+  final VoidCallback onDismiss;
+  final ValueChanged<Surah> onTapSurah;
+
+  const _SurahPeekPanel({
+    required this.surahs,
+    required this.isNext,
+    required this.panelTopLeft,
+    required this.onDismiss,
+    required this.onTapSurah,
+  });
+
+  static const double _itemHeight = 56;
+  static const double _maxVisibleItems = 7;
+  static const double _borderRadius = 16;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Semi-transparent backdrop — tap to dismiss
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: onDismiss,
+            child: Container(color: AppColors.bgBase.withValues(alpha: 0.30)),
+          ),
+        ),
+        // Floating panel — position pre-computed by _showPeek
+        Positioned(
+          left: panelTopLeft.dx,
+          top: panelTopLeft.dy,
+          child: _buildPanel(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPanel(BuildContext context) {
+    // panelHeight is a static const; Material elevation matches
+    return Material(
+      color: AppColors.bgCardDark.withValues(alpha: 0.85),
+      elevation: 16,
+      shadowColor: AppColors.goldStart.withValues(alpha: 0.3),
+      borderRadius: BorderRadius.circular(_borderRadius),
+      child: Container(
+        width: panelWidth,
+        constraints: BoxConstraints(maxHeight: panelHeight),
+        decoration: BoxDecoration(
+          color: AppColors.bgCardDark.withValues(alpha: 0.85),
+          borderRadius: BorderRadius.circular(_borderRadius),
+          border: Border.all(color: AppColors.goldStart.withValues(alpha: 0.20), width: 1),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.goldStart.withValues(alpha: 0.08),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(_borderRadius),
+                  topRight: Radius.circular(_borderRadius),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isNext ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+                    color: AppColors.goldStart,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isNext ? 'Upcoming' : 'Previous',
+                    style: const TextStyle(
+                      color: AppColors.goldStart,
+                      fontFamily: fontBody,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: onDismiss,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: AppColors.goldStart.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        color: AppColors.goldStart,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Scrollable surah list
+            Flexible(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                shrinkWrap: true,
+                itemCount: surahs.length,
+                itemExtent: _itemHeight,
+                itemBuilder: (context, index) {
+                  final s = surahs[index];
+                  return InkWell(
+                    onTap: () => onTapSurah(s),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      child: Row(
+                        children: [
+                          // Surah number badge
+                          Container(
+                            width: 28,
+                            height: 28,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppColors.goldStart.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              s.surahId,
+                              style: const TextStyle(
+                                color: AppColors.goldStart,
+                                fontFamily: fontBody,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Arabic name
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              s.name,
+                              style: const TextStyle(
+                                color: AppColors.textWhite,
+                                fontFamily: fontBody,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // English name + ayah count
+                          Expanded(
+                            flex: 4,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  s.englishName,
+                                  style: const TextStyle(
+                                    color: AppColors.textWhite,
+                                    fontFamily: fontBody,
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 12,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${s.ayahCount} ayahs',
+                                  style: const TextStyle(
+                                    color: AppColors.goldMuted,
+                                    fontFamily: fontBody,
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -391,22 +687,20 @@ class _SeekBack5Button extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final atStart = positionMs <= 5000;
+    final atStart = positionMs == 0;
     return IconButton(
       icon: const Icon(Icons.replay_5),
-      iconSize: 20,
-      visualDensity: VisualDensity.compact,
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(),
+      iconSize: 28,
       onPressed: atStart
           ? null
           : () {
               HapticFeedback.lightImpact();
-              onSeek((positionMs - 5000).clamp(0, durationMs));
+              final newPos = positionMs - 5000;
+              onSeek(newPos > 0 ? newPos : 0);
             },
       color: atStart
           ? AppColors.goldMuted.withValues(alpha: 0.35)
-          : AppColors.goldMuted.withValues(alpha: 0.8),
+          : AppColors.goldStart,
       tooltip: 'Back 5 seconds',
     );
   }
@@ -428,10 +722,7 @@ class _SeekForward5Button extends StatelessWidget {
     final atEnd = positionMs >= durationMs - 5000;
     return IconButton(
       icon: const Icon(Icons.forward_5),
-      iconSize: 20,
-      visualDensity: VisualDensity.compact,
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(),
+      iconSize: 28,
       onPressed: atEnd
           ? null
           : () {
@@ -440,7 +731,7 @@ class _SeekForward5Button extends StatelessWidget {
             },
       color: atEnd
           ? AppColors.goldMuted.withValues(alpha: 0.35)
-          : AppColors.goldMuted.withValues(alpha: 0.8),
+          : AppColors.goldStart,
       tooltip: 'Forward 5 seconds',
     );
   }
@@ -478,11 +769,6 @@ class _PlayerSeekBar extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _SeekBack5Button(
-                positionMs: _getPositionMs(ref),
-                durationMs: _getDurationMs(ref) ?? 0,
-                onSeek: onSeek,
-              ),
               Text(
                 _formatDuration(_getPositionMs(ref)),
                 style: const TextStyle(
@@ -498,11 +784,6 @@ class _PlayerSeekBar extends ConsumerWidget {
                   color: AppColors.goldMuted,
                   fontFamily: fontBody,
                 ),
-              ),
-              _SeekForward5Button(
-                positionMs: _getPositionMs(ref),
-                durationMs: _getDurationMs(ref) ?? 0,
-                onSeek: onSeek,
               ),
             ],
           ),

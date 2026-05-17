@@ -40,6 +40,9 @@ dependencies:
   # Utilities
   equatable: ^2.0.5
 
+  # Animations
+  lottie: ^3.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -49,3 +52,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/

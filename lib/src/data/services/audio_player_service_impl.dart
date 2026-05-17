@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:audio_service/audio_service.dart' as asvc;
 import 'package:just_audio/just_audio.dart' as ja;
@@ -48,12 +49,13 @@ class AudioPlayerServiceImpl extends AudioPlayerService {
     if (_sharedHandler != null) return await _sharedHandler!;
     _sharedHandler = asvc.AudioService.init(
       builder: () => _AudioHandlerImpl(),
-      config: const asvc.AudioServiceConfig(
+      config: asvc.AudioServiceConfig(
         androidNotificationChannelId: 'qlearner.channel',
         androidNotificationChannelName: 'Quran Playback',
-        androidNotificationOngoing: true,
+        androidNotificationOngoing: false,
         androidStopForegroundOnPause: true,
         androidNotificationIcon: 'drawable/ic_notification',
+        notificationColor: const Color(0xFF1A1A1A),
       ),
     );
     return await _sharedHandler!;
@@ -118,7 +120,7 @@ class AudioPlayerServiceImpl extends AudioPlayerService {
   }
 
   @override
-  Future<void> play(String url, {int? startMs, int? endMs}) async {
+  Future<void> play(String url, {int? startMs, int? endMs, String? surahName, String? surahArabic}) async {
     if (_isDisposed) return;
     print('[AudioPlayer] play($url, startMs=$startMs)');
     try {
@@ -135,8 +137,8 @@ class AudioPlayerServiceImpl extends AudioPlayerService {
       final item = asvc.MediaItem(
         id: surahId ?? '',
         album: 'Quran',
-        title: 'Surah ${surahId ?? 'Unknown'}',
-        artist: 'Recitation',
+        title: surahName ?? 'Surah ${surahId ?? 'Unknown'}',
+        artist: surahArabic ?? 'Recitation',
         extras: {'url': url, 'startMs': startMs, 'endMs': endMs, 'surahId': surahId},
       );
 
