@@ -78,47 +78,52 @@ class _SeekBarGoldState extends State<SeekBarGold> {
           ),
           // Gold thumb positioned at current value
           if (widget.onChanged != null)
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              bottom: 0,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: FractionallySizedBox(
-                  widthFactor: _currentValue,
-                  child: Transform.translate(
-                    offset: const Offset(-thumbRadius, 0),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Thumb glow
-                        Container(
-                          width: thumbRadius * 2 + 8,
-                          height: thumbRadius * 2 + 8,
-                          decoration: BoxDecoration(
-                            color: AppColors.goldEnd.withValues(alpha: 0.3),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        // Thumb
-                        Container(
-                          width: thumbRadius * 2,
-                          height: thumbRadius * 2,
-                          decoration: BoxDecoration(
-                            color: AppColors.goldEnd,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.goldStart,
-                              width: 2,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final trackWidth = constraints.maxWidth * 0.9;
+                final trackLeft = (constraints.maxWidth - trackWidth) / 2;
+                final thumbX = trackLeft + _currentValue * trackWidth;
+                
+                return Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Transform.translate(
+                      offset: Offset(thumbX - thumbRadius - 4, 0),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Thumb glow
+                          Container(
+                            width: thumbRadius * 2 + 8,
+                            height: thumbRadius * 2 + 8,
+                            decoration: BoxDecoration(
+                              color: AppColors.goldEnd.withValues(alpha: 0.3),
+                              shape: BoxShape.circle,
                             ),
                           ),
-                        ),
-                      ],
+                          // Thumb
+                          Container(
+                            width: thumbRadius * 2,
+                            height: thumbRadius * 2,
+                            decoration: BoxDecoration(
+                              color: AppColors.goldEnd,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.goldStart,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           // Gesture detector spans full track
           if (widget.onChanged != null)
