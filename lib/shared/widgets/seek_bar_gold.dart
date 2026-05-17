@@ -76,7 +76,51 @@ class _SeekBarGoldState extends State<SeekBarGold> {
               ),
             ),
           ),
-          // Draggable thumb with gesture detection
+          // Gold thumb positioned at current value
+          if (widget.onChanged != null)
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: FractionallySizedBox(
+                  widthFactor: _currentValue,
+                  child: Transform.translate(
+                    offset: const Offset(-thumbRadius, 0),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Thumb glow
+                        Container(
+                          width: thumbRadius * 2 + 8,
+                          height: thumbRadius * 2 + 8,
+                          decoration: BoxDecoration(
+                            color: AppColors.goldEnd.withValues(alpha: 0.3),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        // Thumb
+                        Container(
+                          width: thumbRadius * 2,
+                          height: thumbRadius * 2,
+                          decoration: BoxDecoration(
+                            color: AppColors.goldEnd,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.goldStart,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          // Gesture detector spans full track
           if (widget.onChanged != null)
             Positioned.fill(
               child: GestureDetector(
@@ -100,33 +144,7 @@ class _SeekBarGoldState extends State<SeekBarGold> {
                   widget.onChanged?.call(_currentValue);
                   setState(() => _isDragging = false);
                 },
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Thumb glow
-                    Container(
-                      width: thumbRadius * 2 + 8,
-                      height: thumbRadius * 2 + 8,
-                      decoration: BoxDecoration(
-                        color: AppColors.goldEnd.withValues(alpha: 0.3),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    // Thumb
-                    Container(
-                      width: thumbRadius * 2,
-                      height: thumbRadius * 2,
-                      decoration: BoxDecoration(
-                        color: AppColors.goldEnd,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.goldStart,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                child: const SizedBox.expand(),
               ),
             ),
         ],
