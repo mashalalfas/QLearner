@@ -5,7 +5,6 @@ import '../features/home/home.dart';
 import '../features/library/library.dart';
 import '../features/reciters/reciters.dart';
 import '../features/settings/settings.dart';
-import 'app_lifecycle_listener.dart';
 
 /// Main QLearner app widget
 class QLearnerApp extends ConsumerWidget {
@@ -30,7 +29,7 @@ class MainNavigation extends ConsumerStatefulWidget {
   ConsumerState<MainNavigation> createState() => _MainNavigationState();
 }
 
-class _MainNavigationState extends ConsumerState<MainNavigation> {
+class _MainNavigationState extends ConsumerState<MainNavigation> with WidgetsBindingObserver {
   int _currentIndex = 0;
 
   static const List<BottomNavItem> _navItems = [
@@ -58,6 +57,32 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
     RecitersScreen(),
     SettingsScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      // Trigger immediate save
+      try {
+        final container = ProviderScope.containerOf(context);
+        container.read(playerAutoSaveProvider.notifier).saveNow();
+      } catch (e) {
+        // Silent fail — app is backgrounding
+      }
+    }
+    super.didChangeAppLifecycleState(state);
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -11,6 +11,7 @@ import 'package:qlearner/src/core/services/audio_player_service.dart';
 import 'package:qlearner/src/features/player/providers/player_providers.dart';
 import 'package:qlearner/src/features/player/providers/current_surah_provider.dart';
 import 'package:qlearner/src/data/models/bookmark.dart';
+import 'package:qlearner/src/features/reciters/providers/reciters_providers.dart';
 import 'package:qlearner/src/data/models/surah.dart';
 import 'package:lottie/lottie.dart';
 
@@ -79,6 +80,21 @@ class PlayerScreen extends ConsumerWidget {
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
+                    ),
+
+                    // Reciter name
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final reciter = ref.watch(selectedReciterProvider);
+                        return Text(
+                          reciter?.name ?? 'Default Reciter',
+                          style: const TextStyle(
+                            color: AppColors.textGray,
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 32),
