@@ -1,10 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../core/theme/cotton_cloud_theme.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
 
-/// Floating Mint Island Navigation
-/// A glassmorphic circular FAB centered on a glass bottom bar
-/// Features breathing glow animation and organic hover effects
+/// Floating Gold Island Navigation
+/// A premium circular FAB centered on a dark glass bottom bar
+/// Features subtle breathing glow animation
 class CenterIslandNav extends StatelessWidget {
   final int currentIndex;
   final List<BottomNavItem> items;
@@ -76,7 +77,7 @@ class CenterIslandNav extends StatelessWidget {
   }
 }
 
-/// Glassmorphic bottom bar with backdrop blur
+/// Dark glass bottom bar with gold accent
 class _GlassBottomBar extends StatelessWidget {
   final double islandSize;
   final double barHeight;
@@ -92,18 +93,24 @@ class _GlassBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRect(
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           height: barHeight + 32,
           decoration: BoxDecoration(
-            color: CottonCloudTheme.glassWhite.withValues(alpha: 0.6),
+            color: AppColors.bgCardDark.withValues(alpha: 0.85),
             border: const Border(
               top: BorderSide(
-                color: CottonCloudTheme.hairlineBorder,
+                color: AppColors.goldSoft,
                 width: 0.5,
               ),
             ),
-            boxShadow: CottonCloudTheme.glassShadow,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.goldStart.withValues(alpha: 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, -4),
+              ),
+            ],
           ),
           child: child,
         ),
@@ -140,8 +147,8 @@ class _NavItem extends StatelessWidget {
               icon,
               size: 22,
               color: isActive
-                  ? CottonCloudTheme.accent
-                  : CottonCloudTheme.textSecondary,
+                  ? AppColors.goldStart
+                  : AppColors.textGray,
             ),
             const SizedBox(height: 2),
             Text(
@@ -150,8 +157,8 @@ class _NavItem extends StatelessWidget {
                 fontSize: 10,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                 color: isActive
-                    ? CottonCloudTheme.accent
-                    : CottonCloudTheme.textSecondary,
+                    ? AppColors.goldStart
+                    : AppColors.textGray,
               ),
             ),
           ],
@@ -161,7 +168,7 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-/// Floating center island with breathing glow animation
+/// Floating center island with subtle breathing glow animation
 class _FloatingIsland extends StatefulWidget {
   final IconData icon;
   final bool isActive;
@@ -189,21 +196,21 @@ class _FloatingIslandState extends State<_FloatingIsland>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: CottonCloudTheme.breathingDuration,
+      duration: const Duration(milliseconds: 2500),
       vsync: this,
     )..repeat(reverse: true);
 
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.04).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: CottonCloudTheme.calmEase,
+        curve: Curves.easeInOut,
       ),
     );
 
-    _glowAnimation = Tween<double>(begin: 0.45, end: 0.65).animate(
+    _glowAnimation = Tween<double>(begin: 0.35, end: 0.55).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: CottonCloudTheme.calmEase,
+        curve: Curves.easeInOut,
       ),
     );
   }
@@ -225,20 +232,20 @@ class _FloatingIslandState extends State<_FloatingIsland>
             width: widget.size,
             height: widget.size,
             decoration: BoxDecoration(
-              gradient: CottonCloudTheme.mintGradient,
+              gradient: AppColors.goldGradient,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: CottonCloudTheme.mint.withValues(
-                    alpha: widget.isActive ? _glowAnimation.value : 0.45,
+                  color: AppColors.goldStart.withValues(
+                    alpha: widget.isActive ? _glowAnimation.value : 0.35,
                   ),
-                  blurRadius: widget.isActive ? 36 : 24,
+                  blurRadius: widget.isActive ? 32 : 20,
                   spreadRadius: 0,
                 ),
               ],
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.9),
-                width: 5,
+                width: 4,
               ),
             ),
             child: Material(
@@ -248,8 +255,8 @@ class _FloatingIslandState extends State<_FloatingIsland>
                 customBorder: const CircleBorder(),
                 child: Icon(
                   widget.icon,
-                  size: widget.size * 0.45,
-                  color: Colors.white,
+                  size: widget.size * 0.42,
+                  color: AppColors.bgBase,
                 ),
               ),
             ),

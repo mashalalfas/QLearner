@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.0'
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Lint (analyzer)
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      - name: Type check
+        run: dart analyze --write=analysis.txt
+
+      - name: Test
+        run: flutter test --coverage --no-pub
+
+      - name: Build (APK debug)
+        run: flutter build apk --debug --no-pub
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
+      - name: Upload analysis results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-analysis
+          path: analysis.txt
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.0'
+          channel: stable
+          cache: true
+
+      - name: Check for secrets
+        run: |
+          echo "Checking for accidentally committed secrets..."
+          git grep -i "api_key\|secret\|password\|private_key" -- '*.dart' '*.yaml' '*.json' || true
+          echo "Secret scan complete."
+
+      - name: Verify pub dependencies
+        run: flutter pub outdated --mode=null-safety || true
