@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:qlearner/src/features/player/domain/entities/player_persistence.dart';
-import 'package:qlearner/src/features/player/domain/repositories/player_repository.dart';
-import 'package:qlearner/src/core/providers/service_providers.dart';
+import '../../domain/entities/player_persistence.dart';
+import '../data/datasources/player_local_datasource.dart';
+import '../../../core/providers/service_providers.dart';
 
 /// Player persistence — audiobook-style state survival
 class PlayerPersistenceNotifier extends StateNotifier<AsyncValue<PlayerPersistence?>> {
