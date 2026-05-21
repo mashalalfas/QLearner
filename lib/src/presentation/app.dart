@@ -5,6 +5,7 @@ import '../features/home/home.dart';
 import '../features/library/library.dart';
 import '../features/reciters/reciters.dart';
 import '../features/settings/settings.dart';
+import 'app_lifecycle_listener.dart';
 
 /// Main QLearner app widget
 class QLearnerApp extends ConsumerWidget {

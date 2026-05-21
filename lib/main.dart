@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'src/data/data.dart' as data;
 import 'src/core/core.dart' as core;
@@ -9,6 +10,9 @@ import 'src/data/services/audio_player_service_impl.dart';
 import 'src/features/player/data/repositories/player_repository_impl.dart';
 import 'src/features/player/data/datasources/player_local_datasource.dart';
 import 'src/features/player/providers/current_surah_provider.dart';
+import 'src/features/player/providers/player_persistence_provider.dart';
+import 'src/features/player/providers/player_auto_save_provider.dart';
+import 'src/features/player/providers/player_restoration_provider.dart';
 import 'src/presentation/app.dart';
 
 void main() {
@@ -32,6 +36,15 @@ void main() {
           audioPlayerService: ref.watch(audioPlayerProvider),
           localDataSource: PlayerLocalDataSourceImpl(),
         )),
+
+        // Player persistence — load saved state on startup
+        playerPersistenceProvider,
+
+        // Player auto-save — every 30s + on demand
+        playerAutoSaveProvider,
+
+        // Player restoration — restore last surah on launch
+        playerRestorationProvider,
 
         // Home Provider - inject repository (depends on quranRepositoryProvider)
         homeProvider.overrideWith((ref) => HomeNotifier(
