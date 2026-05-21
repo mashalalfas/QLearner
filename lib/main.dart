@@ -6,6 +6,8 @@ import 'src/features/features.dart';
 import 'src/features/home/providers/home_state.dart';
 import 'src/core/providers/service_providers.dart';
 import 'src/data/services/audio_player_service_impl.dart';
+import 'src/features/player/data/repositories/player_repository_impl.dart';
+import 'src/features/player/data/datasources/player_local_datasource.dart';
 import 'src/features/player/providers/current_surah_provider.dart';
 import 'src/presentation/app.dart';
 
@@ -24,6 +26,12 @@ void main() {
 
         // Audio Player Service (no DB access — runs in background isolate)
         audioPlayerProvider.overrideWith((ref) => AudioPlayerServiceImpl.create()),
+
+        // Player Repository — wraps audio service + local persistence
+        playerRepositoryProvider.overrideWith((ref) => PlayerRepositoryImpl(
+          audioPlayerService: ref.watch(audioPlayerProvider),
+          localDataSource: PlayerLocalDataSourceImpl(),
+        )),
 
         // Home Provider - inject repository (depends on quranRepositoryProvider)
         homeProvider.overrideWith((ref) => HomeNotifier(

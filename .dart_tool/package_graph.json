@@ -12,6 +12,7 @@
         "dio",
         "equatable",
         "flutter",
+        "flutter_animate",
         "flutter_riverpod",
         "google_fonts",
         "just_audio",
@@ -112,6 +113,14 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "flutter_animate",
+      "version": "4.5.2",
+      "dependencies": [
+        "flutter",
+        "flutter_shaders"
       ]
     },
     {
@@ -1295,6 +1304,14 @@
         "collection",
         "meta",
         "pub_semver"
+      ]
+    },
+    {
+      "name": "flutter_shaders",
+      "version": "0.1.3",
+      "dependencies": [
+        "flutter",
+        "vector_math"
       ]
     }
   ],

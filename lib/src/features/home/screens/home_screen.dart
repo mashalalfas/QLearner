@@ -2,6 +2,7 @@ import 'dart:async' show unawaited;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -10,6 +11,7 @@ import '../../../data/models/surah.dart';
 import '../../player/screens/player_screen.dart';
 import '../../player/providers/current_surah_provider.dart';
 import '../../player/providers/player_providers.dart';
+import '../../../core/services/audio_player_service.dart';
 import '../../../core/providers/service_providers.dart';
 
 /// Home screen — 2-column grid of surah cards with Dignity theme
@@ -68,6 +70,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final homeState = ref.watch(homeProvider);
     final surahs = homeState.filteredSurahs;
+    final playerStateAsync = ref.watch(playerStateProvider);
+    final isPlaying = playerStateAsync.value?.isPlaying ?? false;
+    final isPaused = playerStateAsync.value?.state == PlayerStateEnum.paused;
+    final showMiniPlayer = isPlaying || isPaused;
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
@@ -128,8 +134,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
             ),
 
-            // Mini player bar
-            if (ref.watch(currentSurahProvider) != null)
+            // Mini player bar — only shows when playing or paused
+            if (showMiniPlayer)
               _MiniPlayerBar(
                 onTap: () {
                   final surahId = ref.read(currentSurahProvider)!.surahId;
@@ -403,15 +409,19 @@ class _MiniPlayerBar extends ConsumerWidget {
     final currentSurah = ref.watch(currentSurahProvider);
     final audioPlayer = ref.watch(audioPlayerProvider);
     final playerStateAsync = ref.watch(playerStateProvider);
+    final positionAsync = ref.watch(positionProvider);
 
     if (currentSurah == null) return const SizedBox.shrink();
 
     final isPlaying = playerStateAsync.value?.isPlaying ?? false;
+    final positionMs = positionAsync.value ?? playerStateAsync.value?.positionMs ?? 0;
+    final durationMs = playerStateAsync.value?.durationMs ?? 0;
+    final progress = durationMs > 0 ? positionMs / durationMs : 0.0;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 64,
+        height: 72,
         margin: EdgeInsets.only(
           left: screenPaddingH,
           right: screenPaddingH,
@@ -425,70 +435,84 @@ class _MiniPlayerBar extends ConsumerWidget {
             width: goldBorderWidth,
           ),
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Album art placeholder
-            Container(
-              width: 48,
-              height: 48,
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: AppColors.goldGradient,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.volume_up,
-                color: AppColors.bgBase,
-                size: 24,
-              ),
+            // Thin progress bar
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: AppColors.bgBase.withOpacity(0.3),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.goldStart),
+              minHeight: 2,
             ),
-            // Surah info
             Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text(
-                    currentSurah.name,
-                    style: const TextStyle(
-                      color: AppColors.textWhite,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                  // Album art placeholder
+                  Container(
+                    width: 48,
+                    height: 48,
+                    margin: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.goldGradient,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    child: const Icon(
+                      Icons.volume_up,
+                      color: AppColors.bgBase,
+                      size: 24,
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    currentSurah.englishName,
-                    style: const TextStyle(
-                      color: AppColors.textGray,
-                      fontSize: 12,
+                  // Surah info
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          currentSurah.name,
+                          style: const TextStyle(
+                            color: AppColors.textWhite,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          currentSurah.englishName,
+                          style: const TextStyle(
+                            color: AppColors.textGray,
+                            fontSize: 12,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  ),
+                  // Play/Pause button
+                  IconButton(
+                    icon: Icon(
+                      isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      color: AppColors.goldStart,
+                    ),
+                    onPressed: () async {
+                      if (isPlaying) {
+                        await audioPlayer.pause();
+                      } else {
+                        await audioPlayer.resume();
+                      }
+                    },
                   ),
                 ],
               ),
             ),
-            // Play/Pause button
-            IconButton(
-              icon: Icon(
-                isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                color: AppColors.goldStart,
-              ),
-              onPressed: () async {
-                if (isPlaying) {
-                  await audioPlayer.pause();
-                } else {
-                  await audioPlayer.resume();
-                }
-              },
-            ),
           ],
         ),
       ),
-    );
+    ).animate().slideY(begin: 100, end: 0).fadeIn();
   }
 }
 
