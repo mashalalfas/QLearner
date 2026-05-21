@@ -49,16 +49,11 @@ This document records the integration steps performed to wire together all QLear
 
 ### 2. Arabic Font Support
 
-**Modified:** `lib/src/core/theme/app_theme.dart`
+**Location:** `lib/core/theme/app_typography.dart`
 
-- Added `import 'package:google_fonts/google_fonts.dart';`
-- Integrated `GoogleFonts.notoSansArabicTextTheme()` into `lightTheme` textTheme
-- Arabic text uses `fontFamily: 'Noto Sans Arabic'` with fallbacks in `ReadScreen`
+Arabic text uses `fontFamily: 'Noto Naskh Arabic'` with fallbacks (`Amiri`, `Scheherazade New`). English text uses `Plus Jakarta Sans`.
 
-**Why Noto Sans Arabic?**
-- Google Fonts delivers fonts at runtime; no asset bundling needed
-- Excellent Arabic script coverage with proper glyph shaping
-- Supports a wide range of Arabic characters for Quranic text
+Both fonts are loaded via `google_fonts` package — no asset bundling needed. Fonts download on first run.
 
 ---
 

@@ -80,16 +80,18 @@ All state is managed via Riverpod:
 - **StreamProvider**: For streams (player position, playback state)
 - **StateProvider**: For simple state (current track info)
 
-## Color Theme (Cotton Cloud)
+## Color Theme (Dignity)
 
 ```dart
-static const Color lavender = Color(0xFFE6E6FA);   // Header
-static const Color cream = Color(0xFFFFFDD0);      // Body
-static const Color accentPurple = Color(0xFF7C6FAF); // Accent
-static const Color darkPurple = Color(0xFF5A4A8F);   // Darker variant
-static const Color lightLavender = Color(0xFFF5F5FF); // Input bg
-static const Color darkText = Color(0xFF2D2D3A);      // Primary text
-static const Color secondaryText = Color(0xFF6B6B80); // Secondary text
+static const Color bgBase = Color(0xFF0A0A0A);       // Page background
+static const Color bgCardDark = Color(0xFF1A1A1A);    // Card background
+static const Color bgCardInner = Color(0xFF141414);   // Card inner
+static const Color goldStart = Color(0xFFC9A84C);     // Gold gradient start
+static const Color goldEnd = Color(0xFFE8D48B);       // Gold gradient end
+static const Color goldSoft = Color(0x33C9A84C);      // 19% opacity gold border
+static const Color goldMuted = Color(0x99C9A84C);     // 60% opacity gold text
+static const Color textWhite = Color(0xFFFFFFFF);     // Primary text
+static const Color textGray = Color(0xFF888888);      // Secondary text
 ```
 
 ## Models

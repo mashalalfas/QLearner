@@ -15,7 +15,7 @@ A modern, clean-architecture Flutter app for learning and reading the Quran with
 - **Bookmarks:** Save and organize favorite verses with notes
 - **Download Manager:** Download audio files for offline listening
 - **Persistent State:** Auto-resume last reading position and playback
-- **Arabic Typography:** Noto Sans Arabic font for beautiful rendering
+- **Arabic Typography:** Noto Naskh Arabic font for beautiful rendering
 - **Clean Architecture:** Separated layers (presentation, domain, data)
 
 ---
@@ -34,41 +34,65 @@ A modern, clean-architecture Flutter app for learning and reading the Quran with
 
 ---
 
-## Cotton Glass 2026 Design
+## Dignity Theme
 
-QLearner now features the **Cotton Glass** design system — a soft, organic evolution of glassmorphism with the Cotton Cloud palette.
+QLearner uses the **Dignity** design system — premium black & gold with subtle glassmorphism.
 
 ### Design Principles
 
-- **Glassmorphism 2.0:** Frosted blur (`backdropFilter`), translucent surfaces (60–70% opacity), hairline borders.
-- **Cotton Cloud Palette:** Lavender `#C4B5D6`, Cream `#FFFDF5`, Mint `#B8E4D1`, Pink `#FFD6E0`, Accent `#8B7BB8`.
-- **Organic Shapes:** Blob-like player art with gentle morph animation (10s cycle).
-- **Bento Grid Home:** 3-column modular cards, staggered entrance, dense yet breathable.
-- **Immersive Player:** Glass control bar, organic art, breathing glow effects.
-- **Compact Library:** Glass list items with tight spacing and icons.
-- **Floating Island Nav:** Mint-glass circular FAB with breathing glow.
-- **Slow, Calm Animations:** 3–10s durations, cubic-bezier easing.
+- **Dark premium palette:** Deep black (`#0A0A0A`) with charcoal card surfaces (`#1A1A1A`)
+- **Gold accents:** Warm gold gradient (`#C9A84C → #E8D48B`) for borders, active states, and highlights
+- **Subtle glassmorphism:** 0.5px gold hairline borders, gentle backdrop blur (4–10px)
+- **Typography:** Plus Jakarta Sans (English) + Noto Naskh Arabic (Arabic script)
+- **No trendy effects:** No mint, pink, lavender, or glass-white surfaces
+- **Purposeful motion:** Subtle breathing animations on interactive elements only
 
-### Widgets
+### Color Tokens
 
-**GlassCard** (`lib/src/shared/widgets/glass_card.dart`)
-
-Reusable glassmorphic container with frosted blur, subtle shadow, and optional border. Usage:
+All colors defined in `lib/core/theme/app_colors.dart`:
 
 ```dart
-GlassCard(
-  borderRadius: 20,
-  padding: EdgeInsets.all(16),
-  child: YourContent(),
-  onTap: () {},
+// Backgrounds
+static const Color bgBase = Color(0xFF0A0A0A);      // Page background
+static const Color bgCardDark = Color(0xFF1A1A1A);   // Card background
+static const Color bgCardInner = Color(0xFF141414);  // Card inner
+
+// Gold palette
+static const Color goldStart = Color(0xFFC9A84C);    // Gold gradient start
+static const Color goldEnd = Color(0xFFE8D48B);      // Gold gradient end
+static const Color goldSoft = Color(0x33C9A84C);     // 19% opacity gold border
+static const Color goldMuted = Color(0x99C9A84C);    // 60% opacity gold text
+
+// Text
+static const Color textWhite = Color(0xFFFFFFFF);
+static const Color textGray = Color(0xFF888888);
+
+// Gradients
+static const LinearGradient goldGradient = LinearGradient(
+  colors: [goldStart, goldEnd], begin: Alignment.topLeft, end: Alignment.bottomRight,
+);
+static const LinearGradient cardGradient = LinearGradient(
+  colors: [bgCardDark, bgCardInner], begin: Alignment.topCenter, end: Alignment.bottomCenter,
 );
 ```
 
-**GlassListTile** — compact variant for list items.
+### Spacing & Typography
 
-### Theme
+Defined in `lib/core/theme/app_spacing.dart` and `lib/core/theme/app_typography.dart`:
 
-All colors and glass surfaces are defined in `lib/src/core/theme/cotton_cloud_theme.dart`. Use `CottonCloudTheme` constants for colors (e.g. `CottonCloudTheme.lavender`, `CottonCloudTheme.glassWhite`, `CottonCloudTheme.mintGradient`).
+```dart
+// Card
+cardBorderRadius = 18
+cardPaddingV = 16, cardPaddingH = 12
+
+// Grid
+gridGap = 14, gridColumns = 2
+
+// Bottom Nav
+bottomNavHeight = 80
+```
+
+Text styles use `Plus Jakarta Sans` (English) and `Noto Naskh Arabic` (Arabic) with a clear hierarchy from 52px (player surah number) down to 10px (meta text).
 
 ---
 
@@ -85,272 +109,100 @@ qlearner/
 │   │   │   │   ├── bookmark_service.dart
 │   │   │   │   ├── download_service.dart
 │   │   │   │   └── quran_repository.dart
-│   │   │   ├── theme/                    # App theme
-│   │   │   │   └── app_theme.dart
+│   │   │   ├── theme/                    # Dignity theme tokens
+│   │   │   │   ├── app_colors.dart
+│   │   │   │   ├── app_spacing.dart
+│   │   │   │   └── app_typography.dart
+│   │   │   ├── constants/                # App constants
 │   │   │   └── utils/                    # Utilities
 │   │   ├── data/                         # Data layer
-│   │   │   ├── models/                   # Data models
-│   │   │   │   ├── surah.dart
-│   │   │   │   ├── verse.dart
-│   │   │   │   └── bookmark.dart
+│   │   │   ├── models/                   # Data models (surah, verse, bookmark)
 │   │   │   ├── repositories/             # Repository implementations
-│   │   │   │   ├── quran_repository_impl.dart
-│   │   │   │   └── bookmark_service_impl.dart
 │   │   │   ├── services/                 # Service implementations
-│   │   │   │   ├── audio_player_service_impl.dart
-│   │   │   │   └── download_service_impl.dart
-│   │   │   └── database/
-│   │   │       └── local_database_helper.dart
+│   │   │   └── database/                 # SQLite helper
 │   │   ├── features/                     # Feature modules (UI + state)
-│   │   │   ├── home/
-│   │   │   │   ├── screens/home_screen.dart
-│   │   │   │   ├── providers/home_providers.dart
-│   │   │   │   ├── providers/home_state.dart
-│   │   │   │   └── widgets/surah_card.dart
-│   │   │   ├── read/
-│   │   │   │   ├── screens/read_screen.dart
-│   │   │   │   └── providers/read_providers.dart
-│   │   │   ├── player/
-│   │   │   │   ├── screens/player_screen.dart
-│   │   │   │   └── providers/player_providers.dart
-│   │   │   └── library/
-│   │   │       ├── screens/library_screen.dart
-│   │   │       └── providers/library_providers.dart
-│   │   └── presentation/
-│   │       └── app.dart                  # Entry point + ProviderScope overrides
+│   │   │   ├── home/                     # Surah grid + search
+│   │   │   ├── read/                     # Verse reading screen
+│   │   │   ├── player/                   # Audio player
+│   │   │   ├── library/                  # Bookmarks + downloads
+│   │   │   ├── reciters/                 # Reciter selection
+│   │   │   └── settings/                 # Settings screen
+│   │   └── presentation/                 # App shell, navigation
+│   │       └── app.dart
 │   └── data.dart, core.dart, features.dart  # Barrel exports
+├── shared/
+│   └── widgets/                          # Reusable shared widgets
+│       ├── glass_card.dart               # Gold-bordered glass card
+│       ├── gold_gradient_border.dart     # Custom painter for gold borders
+│       ├── app_bar_gold.dart             # AppBar with gold underline
+│       ├── bottom_nav.dart               # 4-tab bottom navigation
+│       ├── search_bar_gold.dart          # Glassmorphism search input
+│       ├── section_header.dart           # Gold section divider
+│       └── seek_bar_gold.dart            # Custom seek bar
+├── design_templates/                     # HTML mockups and design docs
+│   ├── REDESIGN-PLAN.md                  # Original Dignity plan
+│   ├── REDESIGN-AUDIT.md                 # Codebase audit
+│   └── template-blackgold-dignity.html   # Visual reference mockup
 ├── pubspec.yaml
-├── INTEGRATION.md                       # Integration documentation
-└── README.md                            # This file
+├── README.md
+├── SETUP.md
+└── INTEGRATION.md
 ```
-
----
-
-## Prerequisites
-
-- **Flutter SDK:** >=3.0.0 <4.0.0
-- **Dart SDK:** Comes with Flutter
-- **Android Studio / VS Code:** With Flutter & Dart plugins
-- **Android device/emulator** or **iOS simulator** (iOS support may require additional setup)
 
 ---
 
 ## Getting Started
 
-### 1. Clone & Navigate
+### Prerequisites
+
+- Flutter SDK >= 3.0.0 < 4.0.0
+- Dart SDK (bundled with Flutter)
+- Android Studio / VS Code with Flutter & Dart plugins
+- Android device/emulator or iOS simulator
+
+### Install & Run
 
 ```bash
 cd qlearner
-```
-
-### 2. Install Dependencies
-
-```bash
 flutter pub get
-```
-
-### 3. Check Flutter Environment
-
-```bash
-flutter doctor
-```
-
-Resolve any issues (especially Android toolchain, VS Code/Android Studio plugin).
-
----
-
-## Running the App
-
-### Development Mode (Debug)
-
-```bash
 flutter run
 ```
 
-Or use your IDE's Run button.
-
-**Hot Reload:** Press `r` in terminal or use IDE hot reload button.
-
-### Release Mode (Local Build)
+### Build Release
 
 ```bash
 flutter build apk --release
-```
-
-Then install on device:
-
-```bash
-adb install build/app/outputs/flutter-apk/app-release.apk
-```
-
-*(Ensure USB debugging enabled and device authorized)*
-
----
-
-## Configuration
-
-### Arabic Font
-
-The app uses **Noto Sans Arabic** via `google_fonts` package — no additional setup required. Fonts are downloaded automatically on first run (requires internet). For offline use, pre-cache fonts by adding them as assets (optional).
-
-### Audio Sources
-
-- **Quran audio:** Archive.org (`https://archive.org/download/Quran_With_English_Translation/`)
-- **Streaming:** Direct MP3 streaming with just_audio
-- **Downloads:** Saved to `appDocumentsDirectory/downloads/` via Dio
-
-### Database
-
-SQLite database (`qlearner.db`) created automatically at:
-- Android: `/data/data/com.example.qlearner/databases/qlearner.db`
-- iOS: `.../Documents/qlearner.db`
-
-Tables: `surahs`, `verses`, `bookmarks`, `playback_positions`
-
----
-
-## Build Variants
-
-| Variant | Command | Use Case |
-|---------|---------|----------|
-| Debug | `flutter run` or `flutter build apk --debug` | Development, hot reload |
-| Profile | `flutter build apk --profile` | Performance testing |
-| Release | `flutter build apk --release` | Distribution (Play Store) |
-
----
-
-## Publishing to Google Play
-
-### 1. App Signing
-
-Create a keystore (once):
-
-```bash
-keytool -genkey -v -keystore ~/qlearner.keystore \
-  -alias qlearner_key -keyalg RSA -keysize 2048 -validity 10000
-```
-
-Add `android/key.properties` (gitignored):
-
-```properties
-storePassword=YOUR_KEYSTORE_PASSWORD
-keyPassword=YOUR_KEY_PASSWORD
-keyAlias=qlearner_key
-storeFile=../qlearner.keystore
-```
-
-Update `android/app/build.gradle` — signing already configured by default in Flutter template; just ensure `signingConfigs.release` points to `key.properties`.
-
-### 2. Build Release APK/AAB
-
-```bash
-flutter build appbundle --release
-# or for APK:
-flutter build apk --release
-```
-
-Artifacts:
-- APK: `build/app/outputs/flutter-apk/app-release.apk`
-- AAB: `build/app/outputs/bundle/release/app-release.aab`
-
-### 3. Upload to Play Console
-
-- Create app in [Google Play Console](https://play.google.com/console)
-- Upload AAB (recommended) or APK
-- Fill store listing, content rating, pricing
-- Rollout to production or testing tracks
-
----
-
-## Testing
-
-### Unit Tests
-
-```bash
-flutter test
-```
-
-### Widget Tests
-
-```bash
-flutter test --platform=android
-```
-
-*(Add tests as needed — currently minimal)*
-
----
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| `path_provider` errors on iOS | Add `ios/Runner/Info.plist` entries for file access (usually not needed) |
-| Audio not playing | Check device volume, verify `just_audio` permissions (Android: none; iOS: add `audio` background mode) |
-| Fonts not loading | Ensure internet on first run (google_fonts downloads fonts); or bundle fonts as assets |
-| Database errors | Uninstall and reinstall app to reset DB (data loss) |
-| Provider overrides not applied | Ensure `app.dart` is the entry point (it is) |
-
-### Logs
-
-```bash
-flutter logs
-```
-
-Filter by tag:
-```bash
-flutter logs --clear
-flutter run | grep "QLearner"
+# Artifact: build/app/outputs/flutter-apk/app-release.apk
 ```
 
 ---
 
-## Architecture Notes
+## Architecture
 
-### Clean Architecture Layers
-
-1. **Presentation** (`lib/src/presentation/`, `features/`)
-   - UI widgets, Riverpod providers, state notifiers
-   - No business logic — delegates to domain
-
-2. **Domain** (`lib/src/core/`)
-   - Abstract service contracts (interfaces)
-   - Business logic boundaries
-
-3. **Data** (`lib/src/data/`)
-   - Repository implementations
-   - Service implementations (audio, download, bookmark)
-   - Local database (SQLite)
-   - Network calls (Dio)
-
-### Dependency Flow
+Clean Architecture with Riverpod:
 
 ```
-UI (ConsumerWidget) → Provider (StateNotifier/Stream) → Repository/Service → Database/Network
+UI (ConsumerWidget)
+  → Provider (StateNotifier / StreamProvider / FutureProvider)
+    → Repository / Service (abstract contracts in core/)
+      → Database (sqflite) / Network (dio) / Audio (just_audio)
 ```
 
-All dependencies are **inverted** via interfaces — concrete implementations provided by `ProviderScope` overrides at app startup.
+All concrete implementations are injected via `ProviderScope` overrides in `app.dart`.
 
 ---
 
-## Contributing
+## Design System Evolution
 
-This is a personal project. For questions or suggestions, reach out to the maintainer.
+| Version | Theme | Status |
+|---------|-------|--------|
+| Cotton Cloud 2026 | Lavender/cream/mint/pink glassmorphism | **Removed** (branch: dignity-only-20260521) |
+| **Dignity** | **Black/gold premium** | **Active** (master) |
+
+The Dignity theme replaced all Cotton Cloud references — no lavender, mint, pink, or glass-white surfaces remain in the active codebase.
 
 ---
 
 ## License
 
-MIT License — see LICENSE file (if added).
-
----
-
-## Acknowledgments
-
-- **quran** package for Arabic text and translations
-- **just_audio** and **audio_service** for robust audio playback
-- **Google Fonts** for Noto Sans Arabic
-- **Riverpod** for elegant state management
-
----
-
-*Built with ❤️ and Flutter*
+MIT

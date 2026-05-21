@@ -33,7 +33,7 @@ qlearner/
 ## Key Components
 
 ### Core Layer
-- **Theme**: Cotton Cloud colors (Lavender, Cream, Purple accent)
+- **Theme**: Dignity palette (black `#0A0A0A` + gold `#C9A84C`/`#E8D48B`)
 - **Services**: Abstract interfaces for Audio, Bookmark, Download, Quran Repository
 - **Constants**: API endpoints, DB names, UI constants
 - **Utils**: Formatting helpers

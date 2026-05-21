@@ -1,6 +1,6 @@
 # QLearner Redesign Plan — "Dignity" Theme
 
-## Overview
+**Status:** ✅ Implemented (branch: `dignity-only-20260521`, merged to master)
 
 Complete redesign of QLearner Quran audio player app following the approved "Dignity" design: premium black & gold with glassmorphism cards, gold gradient borders, and Google Fonts (Noto Naskh Arabic + Plus Jakarta Sans).
 
