@@ -159,7 +159,7 @@ class _ReciterCard extends ConsumerWidget {
                 const SizedBox(height: 4),
                 // Style and region
                 Text(
-                  '${reciter.style} • ${reciter.region}',
+                  '${reciter.language} • ${reciter.style} • ${reciter.region}',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,

@@ -5,6 +5,7 @@ import '../features/home/home.dart';
 import '../features/library/library.dart';
 import '../features/reciters/reciters.dart';
 import '../features/settings/settings.dart';
+import '../features/player/providers/player_auto_save_provider.dart';
 
 /// Main QLearner app widget
 class QLearnerApp extends ConsumerWidget {
@@ -76,7 +77,7 @@ class _MainNavigationState extends ConsumerState<MainNavigation> with WidgetsBin
       // Trigger immediate save
       try {
         final container = ProviderScope.containerOf(context);
-        container.read(playerAutoSaveProvider.notifier).saveNow();
+        container.read(playerAutoSaveProvider).saveNow();
       } catch (e) {
         // Silent fail — app is backgrounding
       }

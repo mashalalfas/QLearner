@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class Reciter {
   final String id;
   final String name;
+  final String language;
   final String style;
   final String region;
 
   const Reciter({
     required this.id,
     required this.name,
+    required this.language,
     required this.style,
     required this.region,
   });
@@ -21,48 +23,56 @@ final recitersProvider = Provider<List<Reciter>>((ref) {
     Reciter(
       id: 'mishary_rashid_alafasy',
       name: 'Mishary Rashid Alafasy',
+      language: 'Arabic',
       style: 'Murattal',
       region: 'Kuwait',
     ),
     Reciter(
       id: 'abdul_basit_abdul_samad',
       name: 'Abdul Basit Abdul Samad',
+      language: 'Arabic',
       style: 'Murattal',
       region: 'Egypt',
     ),
     Reciter(
       id: 'muhammad_siddiq_al_minshawi',
       name: 'Muhammad Siddiq Al-Minshawi',
+      language: 'Arabic',
       style: 'Murattal',
       region: 'Egypt',
     ),
     Reciter(
       id: 'mahmoud_khalil_al_husary',
       name: 'Mahmoud Khalil Al-Husary',
+      language: 'Arabic',
       style: 'Murattal',
       region: 'Egypt',
     ),
     Reciter(
       id: 'muhammad_ayyub',
       name: 'Muhammad Ayyub',
+      language: 'Arabic',
       style: 'Murattal',
       region: 'Saudi Arabia',
     ),
     Reciter(
       id: 'saad_al_ghamdi',
       name: 'Saad Al-Ghamdi',
+      language: 'Arabic',
       style: 'Murattal',
       region: 'Saudi Arabia',
     ),
     Reciter(
       id: 'yasser_al_dosari',
       name: 'Yasser Al-Dosari',
+      language: 'Arabic',
       style: 'Murattal',
       region: 'Saudi Arabia',
     ),
     Reciter(
       id: 'saud_al_shuraim',
       name: 'Saud Al-Shuraim',
+      language: 'Arabic',
       style: 'Murattal',
       region: 'Saudi Arabia',
     ),

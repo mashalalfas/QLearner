@@ -1,18 +1,16 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/player_persistence.dart';
-import '../../domain/repositories/player_repository.dart';
+import '../domain/entities/player_persistence.dart';
 import '../../../core/providers/service_providers.dart';
-import '../providers/current_surah_provider.dart';
-import '../providers/player_providers.dart';
+import 'current_surah_provider.dart';
+import 'player_providers.dart';
 
 /// Auto-saves the current player position every 30 seconds and on demand.
 class PlayerAutoSaveNotifier extends StateNotifier<void> {
   Timer? _timer;
-  final PlayerRepository _repository;
   final Ref _ref;
 
-  PlayerAutoSaveNotifier(this._repository, this._ref) {
+  PlayerAutoSaveNotifier(this._ref) : super(null) {
     _startTimer();
   }
 
@@ -33,12 +31,12 @@ class PlayerAutoSaveNotifier extends StateNotifier<void> {
     final position = positionAsync.value ?? 0;
 
     final persistence = PlayerPersistence(
-      lastSurahId: currentSurah.surahId,
+      lastSurahId: int.tryParse(currentSurah.surahId),
       wasPlaying: isPlaying,
       positionMs: position,
     );
 
-    await _repository.savePlayerState(persistence);
+    await _ref.read(playerRepositoryProvider).savePlayerState(persistence);
   }
 
   @override
@@ -50,6 +48,5 @@ class PlayerAutoSaveNotifier extends StateNotifier<void> {
 
 /// Provider for the player auto-save notifier.
 final playerAutoSaveProvider = Provider<PlayerAutoSaveNotifier>((ref) {
-  final repository = ref.watch(playerRepositoryProvider);
-  return PlayerAutoSaveNotifier(repository, ref);
+  return PlayerAutoSaveNotifier(ref);
 });

@@ -1,13 +1,20 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../features/player/providers/player_persistence_provider.dart';
-import '../features/player/providers/current_surah_provider.dart';
-import '../core/providers/service_providers.dart';
-import '../core/services/audio_player_service.dart';
+import '../domain/entities/player_persistence.dart';
+import '../domain/repositories/player_repository.dart';
+import 'current_surah_provider.dart';
+import '../data/datasources/player_local_datasource.dart';
+import '../../../core/providers/service_providers.dart';
 
-/// Restores the last played surah and playback state when the app launches.
-/// Provides a provider that triggers restoration on first read.
-class PlayerRestorationNotifier extends StateNotifier<void> {
+/// Restores the last played surah + position on app launch.
+///
+/// Reads persisted state from SharedPreferences via [PlayerRepository].
+/// If a previous session exists, re-loads the surah, seeks to the saved
+/// position, and resumes playback when it was playing.
+///
+/// Errors are swallowed silently — a failed restore must never block app
+/// startup. The mini player will simply not appear until the user starts
+/// playback manually.
+class PlayerRestorationNotifier {
   final PlayerRepository _repository;
   final Ref _ref;
 
@@ -20,26 +27,38 @@ class PlayerRestorationNotifier extends StateNotifier<void> {
       final saved = await _repository.getLastPlayerState();
       if (saved == null || saved.lastSurahId == null) return;
 
-      // Load the surah
-      final surah = await _ref.read(currentSurahProvider.notifier).loadSurah(saved.lastSurahId!);
-      if (surah == null) return;
+      final surahId = saved.lastSurahId.toString();
 
-      // Seek to saved position (delay to allow audio to initialize)
+      // Load surah (triggers audio playback internally)
+      await _ref
+          .read(currentSurahProvider.notifier)
+          .loadSurah(surahId);
+
+      // Small delay so the audio pipeline is ready before seeking
       await Future.delayed(const Duration(milliseconds: 500));
-      final audioPlayer = _ref.read(audioPlayerProvider);
-      await audioPlayer.seek(saved.positionMs);
 
-      // Resume if it was playing
-      if (saved.wasPlaying) {
-        await audioPlayer.play();
+      // Seek to saved position
+      if (saved.positionMs > 0) {
+        await _repository.seek(saved.positionMs);
       }
-    } catch (e) {
-      // Silent fail — don't block app startup
+
+      // Resume if it was playing when the user left
+      if (saved.wasPlaying) {
+        await _repository.resume();
+      }
+    } catch (_) {
+      // Silent fail — do not block app startup
     }
   }
 }
 
-/// Provider that triggers restoration on app startup
+/// Triggers player state restoration on first read.
+///
+/// The [PlayerRestorationNotifier] runs its restore logic in its
+/// constructor, so simply reading this provider is enough to kick off
+/// the whole flow.  The [autoDispose] modifier means the notifier is
+/// discarded when no widget is listening — this is intentional: we only
+/// need it to fire once at startup.
 final playerRestorationProvider = Provider<PlayerRestorationNotifier>((ref) {
   final repository = ref.watch(playerRepositoryProvider);
   return PlayerRestorationNotifier(repository, ref);

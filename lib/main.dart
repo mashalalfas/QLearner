@@ -58,7 +58,14 @@ void main() {
           return CurrentSurahNotifier(repo, audioPlayer);
         }),
       ],
-      child: const QLearnerApp(),
+      child: Builder(
+        builder: (context) {
+          // Trigger player state restoration on app launch
+          final ref = ProviderScope.containerOf(context);
+          ref.read(playerRestorationProvider);
+          return const QLearnerApp();
+        },
+      ),
     ),
   );
 }
