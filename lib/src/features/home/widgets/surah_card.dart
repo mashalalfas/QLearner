@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../../data/models/surah.dart';
 
 /// Card widget displaying a surah in the list
+/// Dignity theme: dark background, gold accents
 class SurahCard extends StatelessWidget {
   final Surah surah;
   final VoidCallback? onTap;
@@ -18,8 +20,13 @@ class SurahCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
+      color: AppColors.bgCardDark,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(
+          color: AppColors.goldSoft,
+          width: 0.5,
+        ),
       ),
       child: InkWell(
         onTap: onTap,
@@ -33,14 +40,14 @@ class SurahCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: const BoxDecoration(
-                  color: AppTheme.lavender,
+                  color: AppColors.goldStart,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
                   child: Text(
                     surah.surahId,
                     style: const TextStyle(
-                      color: AppTheme.darkText,
+                      color: AppColors.bgBase,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -61,11 +68,7 @@ class SurahCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             surah.englishName,
-                            style: const TextStyle(
-                              color: AppTheme.darkText,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
+                            style: cardTitle,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -75,13 +78,13 @@ class SurahCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.accentPurple.withValues(alpha: 0.1),
+                            color: AppColors.goldStart.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             '${surah.ayahCount} ayahs',
                             style: const TextStyle(
-                              color: AppTheme.accentPurple,
+                              color: AppColors.goldMuted,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
@@ -92,18 +95,15 @@ class SurahCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       surah.englishNameTranslation,
-                      style: const TextStyle(
-                        color: AppTheme.secondaryText,
-                        fontSize: 14,
-                      ),
+                      style: cardSubtitle,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       surah.name,
                       style: const TextStyle(
-                        color: AppTheme.secondaryText,
+                        color: AppColors.textGray,
                         fontSize: 12,
-                        fontFamily: 'Amiri', // Would need to add Arabic font
+                        fontFamily: 'Amiri',
                       ),
                     ),
                   ],
@@ -113,7 +113,7 @@ class SurahCard extends StatelessWidget {
               // Navigation arrow
               const Icon(
                 Icons.chevron_right,
-                color: AppTheme.secondaryText,
+                color: AppColors.textGray,
               ),
             ],
           ),

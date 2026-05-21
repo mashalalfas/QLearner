@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/theme/app_theme.dart';
+import 'package:qlearner/core/theme/app_colors.dart';
+import 'package:qlearner/core/theme/app_typography.dart';
 import '../../home/providers/home_providers.dart';
 import '../../player/screens/player_screen.dart';
 import '../../player/providers/current_surah_provider.dart';
 import '../../../data/models/verse.dart';
 
 /// Read screen - displays verses of a surah for reading
+/// Dignity theme: dark background, gold accents
 class ReadScreen extends ConsumerStatefulWidget {
   final String surahId;
 
@@ -26,9 +28,9 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
     final surahAsync = ref.watch(surahProvider(widget.surahId));
 
     return Scaffold(
-      backgroundColor: AppTheme.cream,
+      backgroundColor: AppColors.bgBase,
       appBar: AppBar(
-        backgroundColor: AppTheme.lavender,
+        backgroundColor: AppColors.bgCardDark,
         elevation: 0,
         title: surahAsync.when(
           data: (surah) => Text('${surah.englishName} - ${surah.name}'),
@@ -55,7 +57,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
         },
         loading: () => const Center(
           child: CircularProgressIndicator(
-            color: AppTheme.accentPurple,
+            color: AppColors.goldStart,
           ),
         ),
         error: (error, stack) => Center(
@@ -65,13 +67,13 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
               const Icon(
                 Icons.error_outline,
                 size: 48,
-                color: AppTheme.secondaryText,
+                color: AppColors.textGray,
               ),
               const SizedBox(height: 16),
               Text(
                 'Error: $error',
                 style: const TextStyle(
-                  color: AppTheme.secondaryText,
+                  color: AppColors.textGray,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -84,6 +86,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
 }
 
 /// Card widget for displaying a single verse
+/// Dignity theme: dark cards, gold accents
 class _VerseCard extends StatelessWidget {
   final Verse verse;
   final String surahId;
@@ -97,8 +100,13 @@ class _VerseCard extends StatelessWidget {
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           elevation: 2,
+          color: AppColors.bgCardDark,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(
+              color: AppColors.goldSoft,
+              width: 0.5,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -114,13 +122,13 @@ class _VerseCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.accentPurple.withValues(alpha: 0.1),
+                        color: AppColors.goldStart.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         'Verse ${verse.verseId}',
                         style: const TextStyle(
-                          color: AppTheme.accentPurple,
+                          color: AppColors.goldMuted,
                           fontWeight: FontWeight.w600,
                           fontSize: 12,
                         ),
@@ -130,7 +138,6 @@ class _VerseCard extends StatelessWidget {
                     if (verse.audioUrl != null)
                       IconButton(
                         onPressed: () {
-                          // Load surah audio, then open player
                           ref
                               .read(currentSurahProvider.notifier)
                               .ensureSurahsLoaded();
@@ -148,7 +155,7 @@ class _VerseCard extends StatelessWidget {
                         },
                         icon: const Icon(
                           Icons.play_circle_outline,
-                          color: AppTheme.accentPurple,
+                          color: AppColors.goldStart,
                         ),
                       ),
                   ],
@@ -161,8 +168,12 @@ class _VerseCard extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.lightLavender,
+                    color: AppColors.bgCardInner,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.goldSoft,
+                      width: 0.5,
+                    ),
                   ),
                   child: Text(
                     verse.arabicText,
@@ -170,7 +181,7 @@ class _VerseCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 28,
                       height: 1.8,
-                      color: AppTheme.darkText,
+                      color: AppColors.textWhite,
                       fontFamily: 'Noto Sans Arabic',
                       fontFamilyFallback: [
                         'Amiri',
@@ -186,9 +197,11 @@ class _VerseCard extends StatelessWidget {
                 // English translation
                 Text(
                   verse.englishText,
-                  style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
+                  style: const TextStyle(
+                    fontSize: 16,
                     height: 1.6,
-                    color: AppTheme.darkText,
+                    color: AppColors.textWhite,
+                    fontFamily: fontBody,
                   ),
                   textAlign: TextAlign.left,
                 ),
@@ -198,10 +211,11 @@ class _VerseCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     verse.englishTransliteration!,
-                    style: AppTheme.lightTheme.textTheme.bodyMedium
-                        ?.copyWith(
+                    style: const TextStyle(
+                      fontSize: 14,
                       fontStyle: FontStyle.italic,
-                      color: AppTheme.secondaryText,
+                      color: AppColors.textGray,
+                      fontFamily: fontBody,
                     ),
                     textAlign: TextAlign.left,
                   ),
