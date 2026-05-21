@@ -257,36 +257,6 @@ class _SearchBarGold extends StatelessWidget {
 }
 
 /// 2-column GridView of surah cards
-class _SurahGrid extends StatelessWidget {
-  final List<Surah> surahs;
-  final Future<void> Function(BuildContext, Surah) onSurahTap;
-
-  const _SurahGrid({
-    required this.surahs,
-    required this.onSurahTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: screenPaddingH),
-      child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: gridColumns,
-          mainAxisSpacing: gridGap,
-          crossAxisSpacing: gridGap,
-          childAspectRatio: 0.85,
-        ),
-        itemCount: surahs.length,
-        itemBuilder: (context, index) {
-          final surah = surahs[index];
-          return _SurahCard(surah: surah, onTap: onSurahTap);
-        },
-      ),
-    );
-  }
-}
-
 /// Surah card with dark gradient background and gold gradient border
 class _SurahCard extends StatelessWidget {
   final Surah surah;
@@ -379,7 +349,7 @@ class _GoldBorderPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    const rect = Rect.largest;
     final gradient = AppColors.goldGradient;
     final paint = Paint()
       ..shader = gradient.createShader(rect)
@@ -441,7 +411,7 @@ class _MiniPlayerBar extends ConsumerWidget {
             // Thin progress bar
             LinearProgressIndicator(
               value: progress,
-              backgroundColor: AppColors.bgBase.withOpacity(0.3),
+              backgroundColor: AppColors.bgBase.withValues(alpha: 0.3),
               valueColor: const AlwaysStoppedAnimation<Color>(AppColors.goldStart),
               minHeight: 2,
             ),

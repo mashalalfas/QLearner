@@ -24,7 +24,7 @@ class QuranRepositoryImpl implements QuranRepository {
     }
 
     if (surahs.isEmpty) {
-      throw Exception('Failed to load any surahs (114/114 failed)');
+      throw Exception('Failed to load any surahs (\$failures/114 failed)');
     }
 
     return surahs;

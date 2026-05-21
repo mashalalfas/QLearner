@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
 
 /// Floating Gold Island Navigation
 /// A premium circular FAB centered on a dark glass bottom bar

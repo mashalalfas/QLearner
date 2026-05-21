@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../domain/entities/player_persistence.dart';
 import '../domain/repositories/player_repository.dart';
 import 'current_surah_provider.dart';
-import '../data/datasources/player_local_datasource.dart';
 import '../../../core/providers/service_providers.dart';
 
 /// Restores the last played surah + position on app launch.

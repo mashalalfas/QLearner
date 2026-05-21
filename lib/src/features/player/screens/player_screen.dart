@@ -347,10 +347,9 @@ class _PlayerControlsState extends ConsumerState<_PlayerControls> {
     final surahs = isNext ? notifier.getUpcomingSurahs() : notifier.getPreviousSurahs();
     if (surahs.isEmpty) return;
 
-    final buttonContext = context;
-    final buttonBox = buttonContext.findRenderObject() as RenderBox?;
-    final overlay = Overlay.of(buttonContext);
-    if (buttonBox == null || overlay == null) return;
+    final buttonBox = context.findRenderObject() as RenderBox?;
+    final overlay = Overlay.of(context);
+    if (buttonBox == null) return;
 
     final buttonPos = buttonBox.localToGlobal(Offset.zero);
     final buttonSize = buttonBox.size;
@@ -504,7 +503,6 @@ class _SurahPeekPanel extends StatelessWidget {
   });
 
   static const double _itemHeight = 56;
-  static const double _maxVisibleItems = 7;
   static const double _borderRadius = 16;
 
   @override
@@ -891,24 +889,6 @@ class _PlayerMeta extends StatelessWidget {
   }
 }
 
-/// Loading overlay shown when switching surahs (3–5 s gap).
-/// Gold waveform bars — no external dependencies.
-class _LoadingOverlay extends StatelessWidget {
-  const _LoadingOverlay();
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: Container(
-        color: AppColors.bgBase.withValues(alpha: 0.88),
-        child: const Center(
-          child: _WaveformAnimation(),
-        ),
-      ),
-    );
-  }
-}
-
 /// 5-bar waveform animation — each bar oscillates independently on a
 /// 700 ms sine wave, staggered 120 ms apart so they look like audio.
 class _WaveformAnimation extends StatelessWidget {
@@ -935,8 +915,7 @@ class _WaveformAnimation extends StatelessWidget {
 
 class _WaveformBar extends StatefulWidget {
   final int delayMs;
-  final double size; // logical px, scales the bar height
-  const _WaveformBar({required this.delayMs, this.size = 32});
+  const _WaveformBar({required this.delayMs});
 
   @override
   State<_WaveformBar> createState() => _WaveformBarState();
@@ -970,10 +949,9 @@ class _WaveformBarState extends State<_WaveformBar>
     return AnimatedBuilder(
       animation: delayed,
       builder: (_, __) {
-        final h = 8.0 + 24.0 * delayed.value;
         return Container(
-          width: widget.size * 0.22,
-          height: widget.size * 0.75 * (0.33 + 0.67 * delayed.value),
+            width: 32 * 0.22,
+          height: 32 * 0.75 * (0.33 + 0.67 * delayed.value),
           decoration: BoxDecoration(
             color: AppColors.goldStart,
             borderRadius: BorderRadius.circular(3),

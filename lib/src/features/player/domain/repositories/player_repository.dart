@@ -1,8 +1,6 @@
 import 'package:qlearner/src/features/player/domain/entities/player_persistence.dart';
 import 'package:qlearner/src/features/player/data/datasources/player_local_datasource.dart';
 import 'package:qlearner/src/core/services/audio_player_service.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 abstract class PlayerRepository {
   // Audio playback
   Future<void> initialize();
