@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:qlearner/core/theme/app_colors.dart';
 
-/// A custom seek bar (slider) with gold gradient fill and a gold thumb
+/// A custom seek bar (slider) with gold gradient fill and a gold glow thumb
 /// indicator.
 ///
-/// Features:
-/// - Gold gradient fill (goldStart → goldEnd)
-/// - Gold thumb indicator with subtle glow
-/// - Customizable value and onChanged callback
+/// Built with standard Flutter Slider + SliderTheme to avoid release-build
+/// rendering artifacts from custom-painted alternatives.
 class SeekBarGold extends StatefulWidget {
   final double value; // 0.0 to 1.0
   final ValueChanged<double>? onChanged;
@@ -35,7 +33,6 @@ class _SeekBarGoldState extends State<SeekBarGold> {
   @override
   void didUpdateWidget(covariant SeekBarGold oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Only sync from parent stream when NOT dragging
     if (!_isDragging && oldWidget.value != widget.value) {
       _currentValue = widget.value;
     }
@@ -44,116 +41,95 @@ class _SeekBarGoldState extends State<SeekBarGold> {
   @override
   Widget build(BuildContext context) {
     const double trackHeight = 6.0;
-    const double thumbRadius = 12.0;
+    const double thumbRadius = 14.0;
+    const double glowRadius = 22.0;
 
     return SizedBox(
-      height: thumbRadius * 2 + 12, // 36px — ample room for 24px thumb
-      child: Stack(
-        alignment: Alignment.centerLeft,
-        children: [
-          // Track background
-          Center(
-            child: Container(
-              width: double.infinity,
-              height: trackHeight,
-              decoration: BoxDecoration(
-                color: AppColors.bgCardDark,
-                borderRadius: BorderRadius.circular(trackHeight / 2),
-              ),
-            ),
+      height: glowRadius * 2 + 8,
+      child: SliderTheme(
+        data: SliderThemeData(
+          trackHeight: trackHeight,
+          activeTrackColor: AppColors.goldStart,
+          inactiveTrackColor: AppColors.bgCardDark,
+          thumbColor: AppColors.goldEnd,
+          thumbShape: _GoldGlowThumbShape(
+            thumbRadius: thumbRadius,
+            glowRadius: glowRadius,
           ),
-          // Filled portion with gold gradient
-          Align(
-            alignment: Alignment.centerLeft,
-            child: FractionallySizedBox(
-              widthFactor: _currentValue,
-              child: Container(
-                height: trackHeight,
-                decoration: const BoxDecoration(
-                  gradient: AppColors.goldGradient,
-                  borderRadius: BorderRadius.all(Radius.circular(2)),
-                ),
-              ),
-            ),
-          ),
-          // Gold thumb positioned at current value
-          if (widget.onChanged != null)
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final trackWidth = constraints.maxWidth * 0.9;
-                final trackLeft = (constraints.maxWidth - trackWidth) / 2;
-                final thumbX = trackLeft + _currentValue * trackWidth;
-                
-                return Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Transform.translate(
-                      offset: Offset(thumbX - thumbRadius - 4, 0),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Thumb glow
-                          Container(
-                            width: thumbRadius * 2 + 8,
-                            height: thumbRadius * 2 + 8,
-                            decoration: BoxDecoration(
-                              color: AppColors.goldEnd.withValues(alpha: 0.3),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          // Thumb
-                          Container(
-                            width: thumbRadius * 2,
-                            height: thumbRadius * 2,
-                            decoration: BoxDecoration(
-                              color: AppColors.goldEnd,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.goldStart,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          // Gesture detector spans full track
-          if (widget.onChanged != null)
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onPanStart: (_) => setState(() => _isDragging = true),
-                onPanUpdate: (details) {
-                  final box = context.findRenderObject() as RenderBox;
-                  final localX = box.globalToLocal(details.globalPosition).dx;
-                  // Track is centered horizontally
-                  final trackWidth = box.size.width * 0.9;
-                  final trackLeft = (box.size.width - trackWidth) / 2;
-                  final relativeX = (localX - trackLeft).clamp(0.0, trackWidth);
-                  final newValue = relativeX / trackWidth;
-                  
-                  setState(() {
-                    _isDragging = true;
-                    _currentValue = newValue;
-                  });
+          overlayShape: SliderComponentShape.noOverlay,
+          trackShape: const RoundedRectSliderTrackShape(),
+        ),
+        child: Slider(
+          value: _currentValue.clamp(0.0, 1.0),
+          onChanged: widget.onChanged == null
+              ? null
+              : (val) {
+                  setState(() => _currentValue = val);
                 },
-                onPanEnd: (details) {
-                  widget.onChanged?.call(_currentValue);
-                  setState(() => _isDragging = false);
-                },
-                child: const SizedBox.expand(),
-              ),
-            ),
-        ],
+          onChangeEnd: widget.onChanged,
+          onChangeStart: (_) {
+            _isDragging = true;
+          },
+        ),
       ),
     );
+  }
+}
+
+/// Custom thumb shape with a gold glow halo around the thumb.
+class _GoldGlowThumbShape extends SliderComponentShape {
+  final double thumbRadius;
+  final double glowRadius;
+
+  const _GoldGlowThumbShape({
+    required this.thumbRadius,
+    required this.glowRadius,
+  });
+
+  @override
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) {
+    return Size.fromRadius(glowRadius);
+  }
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final Canvas canvas = context.canvas;
+
+    // Outer glow
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          AppColors.goldStart.withValues(alpha: 0.4),
+          AppColors.goldStart.withValues(alpha: 0.0),
+        ],
+      ).createShader(
+        Rect.fromCircle(center: center, radius: glowRadius),
+      );
+    canvas.drawCircle(center, glowRadius, glowPaint);
+
+    // Thumb body
+    final thumbPaint = Paint()
+      ..shader = AppColors.goldGradient.createShader(
+        Rect.fromCircle(center: center, radius: thumbRadius),
+      );
+    canvas.drawCircle(center, thumbRadius, thumbPaint);
+
+    // Inner highlight
+    final highlightPaint = Paint()
+      ..color = AppColors.goldEnd.withValues(alpha: 0.5);
+    canvas.drawCircle(center, thumbRadius * 0.4, highlightPaint);
   }
 }

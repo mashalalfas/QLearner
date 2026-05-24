@@ -1,11 +1,13 @@
 import 'dart:async' show unawaited;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_shimmer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_route.dart';
 import '../providers/home_state.dart';
 import '../../../data/models/surah.dart';
 import '../../player/screens/player_screen.dart';
@@ -53,7 +55,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       unawaited(ref.read(currentSurahProvider.notifier).loadSurah(surah.surahId));
       if (!context.mounted) return;
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => PlayerScreen(surahId: surah.surahId)),
+        GoldCurtainRoute(page: PlayerScreen(surahId: surah.surahId)),
       );
     } catch (e) {
       if (context.mounted) {
@@ -105,11 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // Surah grid
             Expanded(
               child: homeState.isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.goldStart,
-                      ),
-                    )
+                  ? const _LoadingShimmerWidget()
                   : homeState.error != null
                       ? _ErrorState(
                           error: homeState.error!,
@@ -140,8 +138,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onTap: () {
                   final surahId = ref.read(currentSurahProvider)!.surahId;
                   Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => PlayerScreen(surahId: surahId),
+                    GoldCurtainRoute(
+                      page: PlayerScreen(surahId: surahId),
                     ),
                   );
                 },
@@ -258,7 +256,7 @@ class _SearchBarGold extends StatelessWidget {
 
 /// 2-column GridView of surah cards
 /// Surah card with dark gradient background and gold gradient border
-class _SurahCard extends StatelessWidget {
+class _SurahCard extends StatefulWidget {
   final Surah surah;
   final Future<void> Function(BuildContext, Surah) onTap;
 
@@ -268,15 +266,69 @@ class _SurahCard extends StatelessWidget {
   });
 
   @override
+  State<_SurahCard> createState() => _SurahCardState();
+}
+
+class _SurahCardState extends State<_SurahCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pressController;
+  late Animation<double> _scaleAnim;
+  late Animation<double> _glowAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _pressController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      reverseDuration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _scaleAnim = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    );
+    _glowAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pressController.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails _) => _pressController.forward();
+  void _onTapUp(TapUpDetails _) {
+    _pressController.reverse();
+    widget.onTap(context, widget.surah);
+  }
+  void _onTapCancel() => _pressController.reverse();
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => onTap(context, surah),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.cardGradient,
-          borderRadius: BorderRadius.circular(cardBorderRadius),
-        ),
-        child: CustomPaint(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: AnimatedBuilder(
+        animation: _pressController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnim.value,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: AppColors.cardGradient,
+                borderRadius: BorderRadius.circular(cardBorderRadius),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.goldStart
+                        .withValues(alpha: 0.3 * _glowAnim.value),
+                    blurRadius: 16 * _glowAnim.value,
+                    spreadRadius: 2 * _glowAnim.value,
+                  ),
+                ],
+              ),
+              child: CustomPaint(
           painter: _GoldBorderPainter(
             borderRadius: cardBorderRadius,
           ),
@@ -288,7 +340,7 @@ class _SurahCard extends StatelessWidget {
               children: [
                 // Surah number (gold, top-left)
                 Text(
-                  surah.surahId,
+                  widget.surah.surahId,
                   style: const TextStyle(
                     fontFamily: fontBody,
                     fontSize: 12,
@@ -301,7 +353,7 @@ class _SurahCard extends StatelessWidget {
                 Expanded(
                   child: Center(
                     child: Text(
-                      surah.name,
+                      widget.surah.name,
                       style: surahArabic,
                       textAlign: TextAlign.center,
                       maxLines: 2,
@@ -315,7 +367,7 @@ class _SurahCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      surah.englishName,
+                      widget.surah.englishName,
                       style: cardSubtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -325,7 +377,7 @@ class _SurahCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${surah.ayahCount} ayahs',
+                          '${widget.surah.ayahCount} ayahs',
                           style: metaText,
                         ),
                       ],
@@ -336,6 +388,9 @@ class _SurahCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+        },
       ),
     );
   }
@@ -486,6 +541,27 @@ class _MiniPlayerBar extends ConsumerWidget {
   }
 }
 
+/// Loading shimmer placeholder
+
+class _LoadingShimmerWidget extends StatelessWidget {
+  const _LoadingShimmerWidget();
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: gridColumns,
+        mainAxisSpacing: gridGap,
+        crossAxisSpacing: gridGap,
+        childAspectRatio: 0.85,
+      ),
+      itemCount: 8,
+      padding: EdgeInsets.zero,
+      itemBuilder: (context, index) => const GoldShimmerCard(),
+    );
+  }
+}
+
 /// Error state widget
 class _ErrorState extends StatelessWidget {
   final String error;
@@ -528,32 +604,72 @@ class _ErrorState extends StatelessWidget {
   }
 }
 
-/// Empty state widget
+/// Empty state widget with gold geometric pattern
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.search_off,
-            size: 48,
-            color: AppColors.textGray,
-          ),
-          SizedBox(height: 16),
-          Text(
-            'No surahs found',
-            style: TextStyle(
-              color: AppColors.textGray,
-              fontSize: 16,
-              fontFamily: fontBody,
+    return Center(
+      child: CustomPaint(
+        size: const Size(200, 200),
+        painter: _GoldPatternPainter(),
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 48,
+              color: AppColors.goldMuted,
             ),
-          ),
-        ],
+            SizedBox(height: 16),
+            Text(
+              'No surahs found',
+              style: TextStyle(
+                color: AppColors.textGray,
+                fontSize: 16,
+                fontFamily: fontBody,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+/// Gold geometric pattern painter for empty states.
+/// Draws a subtle arrangement of gold circles and lines.
+class _GoldPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+
+    // Concentric circles
+    final circlePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5;
+
+    for (double r = 30; r <= 90; r += 15) {
+      circlePaint.color = AppColors.goldSoft.withValues(alpha: 0.15 + (r / 300));
+      canvas.drawCircle(center, r, circlePaint);
+    }
+
+    // Diagonal lines
+    final linePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.3
+      ..color = AppColors.goldSoft.withValues(alpha: 0.1);
+
+    for (double i = -100; i <= 100; i += 20) {
+      canvas.drawLine(
+        Offset(center.dx + i, center.dy - 90),
+        Offset(center.dx + i, center.dy + 90),
+        linePaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

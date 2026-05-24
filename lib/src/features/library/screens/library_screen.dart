@@ -636,27 +636,51 @@ class _EmptySectionMessage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24),
       alignment: Alignment.center,
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            size: 36,
-            color: AppColors.textGray.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            message,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textGray,
-              fontFamily: fontBody,
+      child: CustomPaint(
+        size: const Size(160, 80),
+        painter: _GoldPatternPainter(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 36,
+              color: AppColors.goldMuted,
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textGray,
+                fontFamily: fontBody,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+/// Gold geometric pattern painter for empty states in library.
+class _GoldPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final circlePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5;
+
+    for (double r = 20; r <= 60; r += 10) {
+      circlePaint.color = AppColors.goldSoft.withValues(alpha: 0.15 + (r / 200));
+      canvas.drawCircle(center, r, circlePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _ErrorSectionMessage extends StatelessWidget {

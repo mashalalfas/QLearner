@@ -12,7 +12,7 @@ class QuranRepositoryImpl implements QuranRepository {
   @override
   Future<List<Surah>> getAllSurahs() async {
     final surahs = <Surah>[];
-    int failures = 0;
+    var failures = 0;
 
     for (int i = 1; i <= 114; i++) {
       try {
@@ -24,7 +24,7 @@ class QuranRepositoryImpl implements QuranRepository {
     }
 
     if (surahs.isEmpty) {
-      throw Exception('Failed to load any surahs (\$failures/114 failed)');
+      throw Exception('Failed to load any surahs ($failures/114 failed)');
     }
 
     return surahs;

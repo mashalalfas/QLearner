@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qlearner/core/theme/app_shimmer.dart';
 import 'package:qlearner/core/theme/app_colors.dart';
 import 'package:qlearner/core/theme/app_typography.dart';
+import 'package:qlearner/core/theme/app_spacing.dart';
+import 'package:qlearner/core/theme/app_route.dart';
+import 'package:qlearner/shared/widgets/glass_card.dart';
 import '../../home/providers/home_providers.dart';
 import '../../player/screens/player_screen.dart';
 import '../../player/providers/current_surah_provider.dart';
@@ -29,56 +33,129 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
-      appBar: AppBar(
-        backgroundColor: AppColors.bgCardDark,
-        elevation: 0,
-        title: surahAsync.when(
-          data: (surah) => Text('${surah.englishName} - ${surah.name}'),
-          loading: () => const Text('Loading...'),
-          error: (_, __) => const Text('Error'),
-        ),
-      ),
-      body: versesAsync.when(
-        data: (verses) {
-          if (verses.isEmpty) {
-            return const Center(
-              child: Text('No verses found'),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: verses.length,
-            itemBuilder: (context, index) {
-              final verse = verses[index];
-              return _VerseCard(verse: verse, surahId: widget.surahId);
-            },
-          );
-        },
-        loading: () => const Center(
-          child: CircularProgressIndicator(
-            color: AppColors.goldStart,
-          ),
-        ),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 48,
-                color: AppColors.textGray,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Error: $error',
-                style: const TextStyle(
-                  color: AppColors.textGray,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Custom AppBar with glass styling
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: const BoxDecoration(
+                gradient: AppColors.cardGradient,
+                border: Border(
+                  bottom: BorderSide(color: AppColors.goldSoft, width: 0.5),
                 ),
-                textAlign: TextAlign.center,
               ),
-            ],
-          ),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                    color: AppColors.goldStart,
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: surahAsync.when(
+                      data: (surah) => Text(
+                        '${surah.englishName} - ${surah.name}',
+                        style: const TextStyle(
+                          color: AppColors.textWhite,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: fontBody,
+                        ),
+                      ),
+                      loading: () => const Text(
+                        'Loading...',
+                        style: TextStyle(color: AppColors.textGray),
+                      ),
+                      error: (_, __) => const Text(
+                        'Error',
+                        style: TextStyle(color: AppColors.textGray),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Body
+            Expanded(
+              child: versesAsync.when(
+                data: (verses) {
+                  if (verses.isEmpty) {
+                    return Center(
+                      child: GlassCard(
+                        radius: cardBorderRadius,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 32, horizontal: 24),
+                        child: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.menu_book_outlined,
+                                size: 40, color: AppColors.goldMuted),
+                            SizedBox(height: 12),
+                            Text(
+                              'No verses found',
+                              style: TextStyle(
+                                color: AppColors.textGray,
+                                fontSize: 15,
+                                fontFamily: fontBody,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: verses.length,
+                    itemBuilder: (context, index) {
+                      final verse = verses[index];
+                      return _VerseCard(
+                          verse: verse, surahId: widget.surahId);
+                    },
+                  );
+                },
+                loading: () => ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: 6,
+                  itemBuilder: (context, index) => const Padding(
+                    padding: EdgeInsets.only(bottom: 16),
+                    child: GoldShimmer(height: 120, borderRadius: 18),
+                  ),
+                ),
+                error: (error, stack) => Center(
+                  child: GlassCard(
+                    radius: cardBorderRadius,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 32, horizontal: 24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 40,
+                          color: AppColors.goldMuted,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Error: $error',
+                          style: const TextStyle(
+                            color: AppColors.textGray,
+                            fontSize: 14,
+                            fontFamily: fontBody,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -97,19 +174,10 @@ class _VerseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, child) {
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16),
-          elevation: 2,
-          color: AppColors.bgCardDark,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(
-              color: AppColors.goldSoft,
-              width: 0.5,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: GlassCard(
+            radius: cardBorderRadius,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -131,6 +199,7 @@ class _VerseCard extends StatelessWidget {
                           color: AppColors.goldMuted,
                           fontWeight: FontWeight.w600,
                           fontSize: 12,
+                          fontFamily: fontBody,
                         ),
                       ),
                     ),
@@ -146,9 +215,8 @@ class _VerseCard extends StatelessWidget {
                               .loadSurah(surahId);
                           if (context.mounted) {
                             Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    PlayerScreen(surahId: surahId),
+                              GoldCurtainRoute(
+                                page: PlayerScreen(surahId: surahId),
                               ),
                             );
                           }
@@ -156,70 +224,36 @@ class _VerseCard extends StatelessWidget {
                         icon: const Icon(
                           Icons.play_circle_outline,
                           color: AppColors.goldStart,
+                          size: 22,
                         ),
                       ),
                   ],
                 ),
-
-                const SizedBox(height: 16),
-
+                const SizedBox(height: 12),
                 // Arabic text
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.bgCardInner,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.goldSoft,
-                      width: 0.5,
-                    ),
-                  ),
-                  child: Text(
-                    verse.arabicText,
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      height: 1.8,
-                      color: AppColors.textWhite,
-                      fontFamily: 'Noto Sans Arabic',
-                      fontFamilyFallback: [
-                        'Amiri',
-                        'Scheherazade New',
-                        'Noto Naskh Arabic'
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // English translation
                 Text(
-                  verse.englishText,
+                  verse.arabicText,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontFamily: fontArabic,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
                     height: 1.6,
                     color: AppColors.textWhite,
-                    fontFamily: fontBody,
                   ),
-                  textAlign: TextAlign.left,
+                  textAlign: TextAlign.right,
                 ),
-
-                // Transliteration (if available)
-                if (verse.englishTransliteration != null) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    verse.englishTransliteration!,
+                const SizedBox(height: 8),
+                // Translation
+                Text(
+                  verse.englishText,
                     style: const TextStyle(
                       fontSize: 14,
-                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
                       color: AppColors.textGray,
                       fontFamily: fontBody,
                     ),
-                    textAlign: TextAlign.left,
                   ),
-                ],
               ],
             ),
           ),

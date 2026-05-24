@@ -54,7 +54,8 @@ class AudioPlayerServiceImpl extends AudioPlayerService {
         androidNotificationChannelName: 'Quran Playback',
         androidNotificationOngoing: false,
         androidStopForegroundOnPause: true,
-        androidNotificationIcon: 'drawable/ic_notification',
+        // Keep notification icon from being stripped by R8 resource shrinker.
+        androidNotificationIcon: 'mipmap/ic_launcher',
         notificationColor: const Color(0xFF1A1A1A),
       ),
     );

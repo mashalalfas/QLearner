@@ -54,7 +54,7 @@ class PlayerScreen extends ConsumerWidget {
                 center: Alignment.center,
                 radius: 1.0,
                 colors: [
-                  Color(0x26C9A84C),
+                  Color(0x33C9A84C),
                   AppColors.bgBase,
                 ],
                 stops: [0.0, 0.7],
@@ -62,6 +62,10 @@ class PlayerScreen extends ConsumerWidget {
             ),
             child: Stack(
               children: [
+                // Radial glow layer — strengthens background radial gradient
+                Positioned.fill(
+                  child: _RadialGlowPulse(),
+                ),
                 Column(
                   children: [
                     _PlayerSurahNumber(surahNumber: displayNumber),
@@ -889,30 +893,6 @@ class _PlayerMeta extends StatelessWidget {
   }
 }
 
-/// 5-bar waveform animation — each bar oscillates independently on a
-/// 700 ms sine wave, staggered 120 ms apart so they look like audio.
-class _WaveformAnimation extends StatelessWidget {
-  const _WaveformAnimation();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _WaveformBar(delayMs: 0),
-        SizedBox(width: 6),
-        _WaveformBar(delayMs: 120),
-        SizedBox(width: 6),
-        _WaveformBar(delayMs: 240),
-        SizedBox(width: 6),
-        _WaveformBar(delayMs: 360),
-        SizedBox(width: 6),
-        _WaveformBar(delayMs: 480),
-      ],
-    );
-  }
-}
-
 class _WaveformBar extends StatefulWidget {
   final int delayMs;
   const _WaveformBar({required this.delayMs});
@@ -955,6 +935,57 @@ class _WaveformBarState extends State<_WaveformBar>
           decoration: BoxDecoration(
             color: AppColors.goldStart,
             borderRadius: BorderRadius.circular(3),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Subtle pulsing radial glow behind the player circle.
+/// Adds depth and a premium feel to the player background.
+class _RadialGlowPulse extends StatefulWidget {
+  @override
+  State<_RadialGlowPulse> createState() => _RadialGlowPulseState();
+}
+
+class _RadialGlowPulseState extends State<_RadialGlowPulse>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 4),
+      vsync: this,
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final pulse = 0.15 + 0.1 * _controller.value;
+        return Container(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment.center,
+              radius: 0.8,
+              colors: [
+                AppColors.goldStart.withValues(alpha: pulse),
+                AppColors.goldStart.withValues(alpha: pulse * 0.3),
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.4, 1.0],
+            ),
           ),
         );
       },
