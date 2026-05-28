@@ -12,7 +12,7 @@ import 'package:qlearner/src/features/player/providers/player_providers.dart';
 import 'package:qlearner/src/features/player/providers/current_surah_provider.dart';
 import 'package:qlearner/src/data/models/bookmark.dart';
 import 'package:qlearner/src/data/models/surah.dart';
-import 'package:lottie/lottie.dart';
+import 'package:qlearner/src/features/player/widgets/player_lottie.dart';
 
 /// Player screen — Dignity theme: premium black & gold with animated circle
 ///
@@ -400,41 +400,61 @@ class _PlayerControlsState extends ConsumerState<_PlayerControls> {
           onSeek: widget.onSeek,
         ),
 
-        // Center: waveform when audio is buffering/loading, otherwise Play/Pause
-        widget.playerStateAsync.when(
-          data: (state) {
-            if (state.state == PlayerStateEnum.buffering) {
-              return Lottie.asset(
-                'assets/loading.quran.json',
-                width: 48,
-                height: 48,
-                repeat: true,
+        // Center: PlayerLottie when buffering/loading, otherwise Play/Pause button
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: widget.playerStateAsync.when(
+            data: (state) {
+              final disableAnimations = MediaQuery.of(context).disableAnimations;
+              if (state.state == PlayerStateEnum.buffering) {
+                return Semantics(
+                  label: 'Buffering',
+                  child: PlayerLottie(
+                    key: const ValueKey('buffering'),
+                    state: PlayerStateEnum.buffering,
+                    width: 48,
+                    height: 48,
+                    animate: !disableAnimations,
+                    repeat: !disableAnimations,
+                  ),
+                );
+              }
+              return Semantics(
+                label: state.isPlaying ? 'Pause' : 'Play',
+                child: IconButton(
+                  key: ValueKey(state.isPlaying ? 'pause' : 'play'),
+                  icon: Icon(
+                    state.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  ),
+                  iconSize: 36,
+                  onPressed: widget.onPlay,
+                  color: AppColors.goldStart,
+                  tooltip: state.isPlaying ? 'Pause' : 'Play',
+                ),
               );
-            }
-            return IconButton(
-              icon: Icon(
-                state.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-              ),
+            },
+            loading: () {
+              final disableAnimations = MediaQuery.of(context).disableAnimations;
+              return Semantics(
+                label: 'Buffering',
+                child: PlayerLottie(
+                  key: const ValueKey('loading'),
+                  state: PlayerStateEnum.buffering,
+                  width: 48,
+                  height: 48,
+                  animate: !disableAnimations,
+                  repeat: !disableAnimations,
+                ),
+              );
+            },
+            error: (_, __) => IconButton(
+              key: const ValueKey('error'),
+              icon: const Icon(Icons.play_arrow_rounded),
               iconSize: 36,
               onPressed: widget.onPlay,
-              color: AppColors.goldStart,
-              tooltip: state.isPlaying ? 'Pause' : 'Play',
-            );
-          },
-          loading: () => const Text(
-            '▶',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: AppColors.goldStart,
+              color: AppColors.goldMuted,
+              tooltip: 'Play',
             ),
-          ),
-          error: (_, __) => IconButton(
-            icon: const Icon(Icons.play_arrow_rounded),
-            iconSize: 36,
-            onPressed: widget.onPlay,
-            color: AppColors.goldMuted,
-            tooltip: 'Play',
           ),
         ),
 
@@ -875,95 +895,4 @@ class _PlayerMeta extends StatelessWidget {
   }
 }
 
-/// Loading overlay shown when switching surahs (3–5 s gap).
-/// Gold waveform bars — no external dependencies.
-class _LoadingOverlay extends StatelessWidget {
-  const _LoadingOverlay();
 
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: Container(
-        color: AppColors.bgBase.withValues(alpha: 0.88),
-        child: const Center(
-          child: _WaveformAnimation(),
-        ),
-      ),
-    );
-  }
-}
-
-/// 5-bar waveform animation — each bar oscillates independently on a
-/// 700 ms sine wave, staggered 120 ms apart so they look like audio.
-class _WaveformAnimation extends StatelessWidget {
-  const _WaveformAnimation();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _WaveformBar(delayMs: 0),
-        SizedBox(width: 6),
-        _WaveformBar(delayMs: 120),
-        SizedBox(width: 6),
-        _WaveformBar(delayMs: 240),
-        SizedBox(width: 6),
-        _WaveformBar(delayMs: 360),
-        SizedBox(width: 6),
-        _WaveformBar(delayMs: 480),
-      ],
-    );
-  }
-}
-
-class _WaveformBar extends StatefulWidget {
-  final int delayMs;
-  final double size; // logical px, scales the bar height
-  const _WaveformBar({required this.delayMs, this.size = 32});
-
-  @override
-  State<_WaveformBar> createState() => _WaveformBarState();
-}
-
-class _WaveformBarState extends State<_WaveformBar>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      duration: const Duration(milliseconds: 700),
-      vsync: this,
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final delayed = CurvedAnimation(
-      parent: _ctrl,
-      curve: const Interval(0.0, 0.5, curve: Curves.easeInOut),
-    );
-    return AnimatedBuilder(
-      animation: delayed,
-      builder: (_, __) {
-        final h = 8.0 + 24.0 * delayed.value;
-        return Container(
-          width: widget.size * 0.22,
-          height: widget.size * 0.75 * (0.33 + 0.67 * delayed.value),
-          decoration: BoxDecoration(
-            color: AppColors.goldStart,
-            borderRadius: BorderRadius.circular(3),
-          ),
-        );
-      },
-    );
-  }
-}

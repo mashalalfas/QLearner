@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,8 @@ import '../providers/home_state.dart';
 import '../../../data/models/surah.dart';
 import '../../player/screens/player_screen.dart';
 import '../../player/providers/current_surah_provider.dart';
+import '../../player/providers/player_providers.dart';
+import '../../../core/providers/service_providers.dart';
 
 /// Home screen — 2-column grid of surah cards with Dignity theme
 class HomeScreen extends ConsumerStatefulWidget {
@@ -19,6 +22,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+  bool _isPushingPlayer = false;
 
   @override
   void initState() {
@@ -39,35 +43,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   /// Called when a surah card is tapped.
-  /// Uses [currentSurahProvider] as the single source of truth:
-  /// 1. If tapped surah matches the currently playing one, just open the player (no restart).
-  /// 2. Otherwise loadSurah fetches the Surah and starts playback.
+  /// Fires-and-forgets audio loading so navigation is instant.
   Future<void> _onSurahTap(BuildContext context, Surah surah) async {
-    final current = ref.read(currentSurahProvider);
-    final isAlreadyPlaying = current != null && current.surahId == surah.surahId;
-
-    final messenger = ScaffoldMessenger.of(context);
+    if (_isPushingPlayer) return;
+    _isPushingPlayer = true;
     try {
-      if (!isAlreadyPlaying) {
-        await ref.read(currentSurahProvider.notifier).loadSurah(surah.surahId);
-      }
-      if (!context.mounted) return;
-      if (!isAlreadyPlaying) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('Playing ${surah.englishName}…'),
-            duration: const Duration(milliseconds: 800),
-          ),
-        );
-      }
+      unawaited(ref.read(currentSurahProvider.notifier).loadSurah(surah.surahId));
       if (!context.mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => PlayerScreen(surahId: surah.surahId)),
       );
     } catch (e) {
       if (context.mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
       }
+    } finally {
+      _isPushingPlayer = false;
     }
   }
 
@@ -119,14 +112,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         )
                       : surahs.isEmpty
                           ? const _EmptyState()
-                          : _SurahGrid(
-                              surahs: surahs,
-                              onSurahTap: _onSurahTap,
+                          : GridView.builder(
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: gridColumns,
+                                mainAxisSpacing: gridGap,
+                                crossAxisSpacing: gridGap,
+                                childAspectRatio: 0.85,
+                              ),
+                              itemCount: surahs.length,
+                              itemBuilder: (context, index) {
+                                final surah = surahs[index];
+                                return _SurahCard(surah: surah, onTap: _onSurahTap);
+                              },
+                              padding: EdgeInsets.zero,
                             ),
             ),
 
-            // Bottom padding for nav bar
-            const SizedBox(height: screenPaddingBottom),
+            // Mini player bar
+            if (ref.watch(currentSurahProvider) != null)
+              _MiniPlayerBar(
+                onTap: () {
+                  final surahId = ref.read(currentSurahProvider)!.surahId;
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => PlayerScreen(surahId: surahId),
+                    ),
+                  );
+                },
+              ),
+
+            // Bottom padding for nav bar (system UI)
+            SizedBox(height: MediaQuery.of(context).viewPadding.bottom),
           ],
         ),
       ),
@@ -374,6 +390,106 @@ class _GoldBorderPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Mini player bar shown at bottom of home screen when audio is active
+class _MiniPlayerBar extends ConsumerWidget {
+  final VoidCallback onTap;
+
+  const _MiniPlayerBar({required this.onTap});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentSurah = ref.watch(currentSurahProvider);
+    final audioPlayer = ref.watch(audioPlayerProvider);
+    final playerStateAsync = ref.watch(playerStateProvider);
+
+    if (currentSurah == null) return const SizedBox.shrink();
+
+    final isPlaying = playerStateAsync.value?.isPlaying ?? false;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 64,
+        margin: EdgeInsets.only(
+          left: screenPaddingH,
+          right: screenPaddingH,
+          bottom: MediaQuery.of(context).viewPadding.bottom + 8,
+        ),
+        decoration: BoxDecoration(
+          gradient: AppColors.cardGradient,
+          borderRadius: BorderRadius.circular(cardBorderRadius),
+          border: Border.all(
+            color: AppColors.goldSoft,
+            width: goldBorderWidth,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Album art placeholder
+            Container(
+              width: 48,
+              height: 48,
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: AppColors.goldGradient,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.volume_up,
+                color: AppColors.bgBase,
+                size: 24,
+              ),
+            ),
+            // Surah info
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    currentSurah.name,
+                    style: const TextStyle(
+                      color: AppColors.textWhite,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    currentSurah.englishName,
+                    style: const TextStyle(
+                      color: AppColors.textGray,
+                      fontSize: 12,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            // Play/Pause button
+            IconButton(
+              icon: Icon(
+                isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                color: AppColors.goldStart,
+              ),
+              onPressed: () async {
+                if (isPlaying) {
+                  await audioPlayer.pause();
+                } else {
+                  await audioPlayer.resume();
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Error state widget
