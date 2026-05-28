@@ -62,3 +62,25 @@ Thumbs.db
 *.env
 .env.local
 secrets.*
+
+# Workspace/OpenClaw
+.openclaw/
+AGENTS.md
+HEARTBEAT.md
+HEARTBEAT.toon
+IDENTITY.md
+SOUL.md
+TOOLS.md
+USER.md
+PHASE2_SIGNOFF.md
+
+# IDE
+*.iml
+
+# Build artifacts
+quranaudio-working.apk
+
+# Session logs
+memory/
+
+graphify-out/
