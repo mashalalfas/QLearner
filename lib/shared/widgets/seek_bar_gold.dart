@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:qlearner/core/theme/app_colors.dart';
 
-/// A custom seek bar (slider) with gold gradient fill and a gold thumb
-/// indicator.
+/// A premium gold seek bar using SliderTheme for a polished look.
 ///
 /// Features:
-/// - Gold gradient fill (goldStart → goldEnd)
-/// - Gold thumb indicator with subtle glow
-/// - Customizable value and onChanged callback
+/// - Gold active track and gold thumb indicator
+/// - Clean drag handling via the underlying Slider widget
+/// - Fully themed for the Dignity design language
 class SeekBarGold extends StatefulWidget {
   final double value; // 0.0 to 1.0
   final ValueChanged<double>? onChanged;
@@ -44,63 +43,34 @@ class _SeekBarGoldState extends State<SeekBarGold> {
     const double trackHeight = 6.0;
     const double thumbRadius = 12.0;
 
-    return SizedBox(
-      height: thumbRadius * 2 + 12, // 36px — ample room for 24px thumb
-      child: Stack(
-        alignment: Alignment.centerLeft,
-        children: [
-          // Track background
-          Center(
-            child: Container(
-              width: double.infinity,
-              height: trackHeight,
-              decoration: BoxDecoration(
-                color: AppColors.bgCardDark,
-                borderRadius: BorderRadius.circular(trackHeight / 2),
-              ),
-            ),
-          ),
-          // Filled portion with gold gradient
-          Align(
-            alignment: Alignment.centerLeft,
-            child: FractionallySizedBox(
-              widthFactor: _currentValue,
-              child: Container(
-                height: trackHeight,
-                decoration: const BoxDecoration(
-                  gradient: AppColors.goldGradient,
-                  borderRadius: BorderRadius.all(Radius.circular(2)),
-                ),
-              ),
-            ),
-          ),
-          // Draggable thumb (Slider handles gestures + visual gold thumb)
-          if (widget.onChanged != null)
-            SliderTheme(
-              data: SliderThemeData(
-                trackHeight: trackHeight,
-                trackShape: const RectangularSliderTrackShape(),
-                thumbShape: const RoundSliderThumbShape(
-                  enabledThumbRadius: thumbRadius,
-                ),
-                overlayShape: const RoundSliderOverlayShape(
-                  overlayRadius: thumbRadius + 4,
-                ),
-                thumbColor: AppColors.goldEnd,
-                activeTrackColor: Colors.transparent,
-                inactiveTrackColor: Colors.transparent,
-              ),
-              child: Slider(
-                value: _currentValue,
-                min: 0.0,
-                max: 1.0,
-                onChanged: (val) {
-                  setState(() => _currentValue = val);
-                  widget.onChanged?.call(val);
-                },
-              ),
-            ),
-        ],
+    return SliderTheme(
+      data: const SliderThemeData(
+        trackHeight: trackHeight,
+        trackShape: RoundedRectSliderTrackShape(),
+        thumbShape: RoundSliderThumbShape(
+          enabledThumbRadius: thumbRadius,
+        ),
+        overlayShape: RoundSliderOverlayShape(
+          overlayRadius: thumbRadius + 6,
+        ),
+        activeTrackColor: AppColors.goldEnd,
+        inactiveTrackColor: AppColors.bgCardDark,
+        thumbColor: AppColors.goldEnd,
+        overlayColor: AppColors.goldSoft,
+        disabledActiveTrackColor: AppColors.goldMuted,
+        disabledInactiveTrackColor: AppColors.bgCardDark,
+        disabledThumbColor: AppColors.goldMuted,
+      ),
+      child: Slider(
+        value: _currentValue,
+        min: 0.0,
+        max: 1.0,
+        onChanged: widget.onChanged != null
+            ? (val) {
+                setState(() => _currentValue = val);
+                widget.onChanged?.call(val);
+              }
+            : null,
       ),
     );
   }

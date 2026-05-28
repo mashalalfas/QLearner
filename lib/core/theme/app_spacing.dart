@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Phone Frame Dimensions
 const double phoneWidth = 375;
 const double phoneHeight = 812;
@@ -22,11 +24,7 @@ const double bottomNavPaddingBottom = 24;
 
 /// Border
 const double goldBorderWidth = 0.5;
-
-/// Search Bar
-const double searchBarHeight = 48;
-const double searchBarRadius = 14;
-const double searchBarBlur = 10;
+const Color goldBorderColor = Color(0x33C9A84C);
 
 /// Player Circle
 const double playerCircleSize = 200;
@@ -35,3 +33,8 @@ const double playerCircleInnerSize = 180;
 /// Seek Bar
 const double seekBarHeight = 4;
 const double seekBarDotSize = 12;
+
+/// Search Bar
+const double searchBarHeight = 48;
+const double searchBarRadius = 14;
+const double searchBarBlur = 2;

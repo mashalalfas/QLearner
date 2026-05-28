@@ -1,181 +1,207 @@
-# QLearner Feature Documentation
+# QuranAudio Feature Documentation
 
 ## Features Overview
 
 ### 1. Home Feature (`lib/src/features/home/`)
-**Purpose**: Display all Quran surahs in an explorable list
+**Purpose**: Display all Quran surahs in an explorable grid
 
 #### Components:
-- `screens/home_screen.dart`: Main home screen with search functionality
-- `widgets/surah_card.dart`: Individual surah card widget
+- `screens/home_screen.dart`: Main home screen with search, surah grid, gold border painter
+- `widgets/surah_card.dart`: Individual surah card widget (Dignity style)
 - `providers/home_providers.dart`: Riverpod providers for surah data
 - `providers/home_state.dart`: Home screen state management
 
 #### Features:
-- List all 114 surahs
+- Grid of all 114 surahs with Arabic name + English translation
 - Search by English name, Arabic name, or meaning
 - Loading and error states
-- Tap to navigate to surah details
+- Tap to navigate to surah details / player
+- Gold-themed shimmer loading skeleton
+
+---
 
 ### 2. Read Feature (`lib/src/features/read/`)
 **Purpose**: Display verses of a surah for reading
 
 #### Components:
-- `screens/read_screen.dart`: Displays verses with Arabic and translation
-- `providers/read_providers.dart`: Providers for verse data and bookmarks
+- `screens/read_screen.dart`: Displays verses with Arabic + translation
+- `providers/read_providers.dart`: Providers for verse data + bookmark state per verse
 
 #### Features:
-- Arabic text display (requires Arabic font)
-- English translation
-- Optional transliteration
-- Play button for each verse (placeholder)
-- Bookmark indicator
+- Arabic text display (Noto Naskh Arabic font)
+- English translation below each verse
+- **Bookmark toggle per verse** — tap icon to add/remove bookmark
+- Individual verse audio play button
+- Curtain route transition from home
+
+---
 
 ### 3. Player Feature (`lib/src/features/player/`)
-**Purpose**: Audio playback controls
+**Purpose**: Full audio playback controls
 
 #### Components:
 - `screens/player_screen.dart`: Full-screen player with controls
 - `providers/player_providers.dart`: Player state providers
+- `providers/current_surah_provider.dart`: Surah navigation + _isNavigating lock management
+- `providers/surah_navigation_provider.dart`: Next/prev surah logic
+- `providers/player_auto_save_provider.dart`: Position save on pause
+- `providers/player_persistence_provider.dart`: Playback state persistence
+- `providers/player_restoration_provider.dart`: Session restoration
 
 #### Features:
 - Play/Pause/Stop controls
-- Seek forward/backward (10s increments)
+- Seek forward/backward (±5s, ±10s)
 - Playback speed control (0.5x - 2.0x)
 - Position and duration display
-- Album art / visual indicator
+- Next/Previous surah navigation
+- Repeat mode (1, all, shuffle)
+- **Bookmark from player** — save current verse as bookmark
+- Auto-resume last position
+- Background audio via `audio_service`
+- Lottie loading animation during buffering
+
+---
 
 ### 4. Library Feature (`lib/src/features/library/`)
-**Purpose**: Manage bookmarks and downloads
+**Purpose**: Central hub for bookmarks, downloads, and recents
 
 #### Components:
-- `screens/library_screen.dart`: Tabbed interface for bookmarks/downloads
-- `providers/library_providers.dart`: Providers for library data
+- `screens/library_screen.dart`: Library with Downloads + Bookmarks + Storage + Recents sections
+- `providers/library_providers.dart`: Downloads, bookmarks, recents, storage providers
 
 #### Features:
-- Bookmarks tab: List all bookmarked verses with notes
-- Downloads tab: List downloaded audio files
-- Empty states with helpful messages
+- **Downloads section** — view all downloaded surahs with play button
+- **Bookmarks section** — saved verses grouped by surah, tap to navigate to exact verse
+- **Recents section** — last 50 played surahs (SharedPreferences)
+- **Storage card** — real disk usage computed from download files
+- `_onPlay` wired to `currentSurahProvider.loadSurah()`
 
-## Data Flow
+---
 
-```
-UI (Screens)
-    ↓
-Providers (State)
-    ↓
-Repositories
-    ↓
-Services (Audio, Database, Network)
-    ↓
-External APIs (quran package, audio files)
-```
+### 5. Downloads Feature (`lib/src/features/downloads/`)
+**Purpose**: Dedicated Downloads tab showing all downloaded surahs
 
-## State Management
+#### Components:
+- `screens/downloads_screen.dart`: Full downloads list with status
+- `widgets/download_tile.dart`: Individual download item with progress bar
 
-All state is managed via Riverpod:
+#### Features:
+- List all downloaded surahs grouped by reciter
+- **Download progress bars** for in-flight downloads
+- Play downloaded surahs offline
+- **Large file guard** — prompt if surah >40MB before downloading
+- **Auto-download** — played surahs auto-cached to downloads
+- Delete downloaded files
 
-- **FutureProvider**: For async data loading (surahs, verses)
-- **StateNotifierProvider**: For mutable state (home search)
-- **StreamProvider**: For streams (player position, playback state)
-- **StateProvider**: For simple state (current track info)
+---
 
-## Color Theme (Cotton Cloud)
+### 6. Reciters Feature (`lib/src/features/reciters/`)
+**Purpose**: Switch between available reciters
 
-```dart
-static const Color lavender = Color(0xFFE6E6FA);   // Header
-static const Color cream = Color(0xFFFFFDD0);      // Body
-static const Color accentPurple = Color(0xFF7C6FAF); // Accent
-static const Color darkPurple = Color(0xFF5A4A8F);   // Darker variant
-static const Color lightLavender = Color(0xFFF5F5FF); // Input bg
-static const Color darkText = Color(0xFF2D2D3A);      // Primary text
-static const Color secondaryText = Color(0xFF6B6B80); // Secondary text
-```
+#### Components:
+- `screens/reciters_screen.dart`: Reciter list with selection
+- `providers/reciters_providers.dart`: Reciter data + selected reciter state
 
-## Models
+#### Features:
+- **Mishary Al-Afasy** (default) — primary reciter
+- **AllahsWord (English)** — Quran with English translation audio (**PREMIUM** — code-gated)
+- Reciter-aware URL resolution for audio playback
+- Reciter-scoped download filenames: `{reciterId}_{surahNumber}.mp3`
+- Selection persisted in SharedPreferences
 
-### Surah
-- `surahId`: String (1-114)
-- `name`: Arabic name
-- `englishName`: English transliteration
-- `englishNameTranslation`: English meaning
-- `ayahCount`: Number of verses
-- `audioUrl`: Full chapter recitation URL
-- `revelationType`: 1 (Meccan) or 2 (Medinan)
+---
 
-### Verse
-- `surahId`: Parent surah
-- `verseId`: Ayah number
-- `arabicText`: Arabic script
-- `englishText`: English translation
-- `englishTransliteration`: Optional transliteration
-- `startMs`: Audio start position
-- `endMs`: Audio end position
-- `audioUrl`: Individual verse audio
+### 7. Settings Feature (`lib/src/features/settings/`)
+**Purpose**: User profile and app preferences
 
-### Bookmark
-- `id`: Unique identifier
-- `surahId`, `verseId`: Reference to verse
-- `positionMs`: Audio position when bookmarked
-- `note`: Optional user note
-- `createdAt`, `updatedAt`: Timestamps
+#### Components:
+- `screens/settings_screen.dart`: Profile + preferences form
 
-## Services
+#### Features:
+- Email display with **Save button**
+- **Reciter preference** — dropdown synced with reciters system
+- Audio quality placeholder (for future implementation)
+- Theme is Dignity (black/gold) — fixed
 
-### AudioPlayerService
-- Play audio from URL
-- Seek to position
-- Pause/Resume/Stop
-- Adjust playback speed
-- Stream position and state
+---
 
-### BookmarkService
-- Add/Remove/Update bookmarks
-- Query bookmarks by surah
-- Search bookmarks by note
-- Check if verse is bookmarked
+## Recent Bug Fixes (2026-05-26)
 
-### DownloadService
-- Download files
-- Track download progress
-- List downloaded files
-- Delete files
+| Bug | Status | Fix |
+|-----|--------|-----|
+| Nav/control buttons unresponsive | ✅ Fixed | `_isNavigating` lock now handles error/idle/buffering states; double-push guard in home; play guard for unloaded audio |
+| Bookmarks not working | ✅ Fixed | `verseId:1` hardcode replaced with actual verse position; per-verse bookmark toggle in read_screen; library tap navigates to verse |
+| Animation flickering | ✅ Fixed | Shared shimmer controller (InheritedWidget); merged curtain route transitions; `Rect.largest` → `Rect.fromLTWH` in GoldBorderPainter |
 
-### QuranRepository
-- Get all surahs
-- Get verses for surah
-- Search verses
-- Get surah/verse counts
+---
 
-## Database Schema
+## Phase 2 Feature Documentation
 
-### surahs table
-- `surah_id` (PK)
-- `name`, `english_name`, `english_name_translation`
-- `ayah_count`, `audio_url`, `revelation_type`
+### 8. Reciters Feature (`lib/src/features/reciters/`)
+**Purpose**: Allow users to switch between multiple reciters for Quran audio playback
 
-### verses table
-- `id` (PK, autoincrement)
-- `surah_id`, `verse_id` (unique together)
-- `arabic_text`, `english_text`
-- `english_transliteration` (optional)
-- `start_ms`, `end_ms`, `audio_url`
+#### Components:
+- `screens/reciters_screen.dart`: Reciter list with gold-underline title, subtitles, and selection cards
+- `providers/reciters_providers.dart`: Reciter data models, premium gating, selection persistence
 
-### bookmarks table
-- `id` (PK, generated from surah_verse)
-- `surah_id`, `verse_id`
-- `position_ms`, `note`
-- `created_at`, `updated_at`
+#### Features:
+- **12 Arabic reciters** — Mishary Al-Afasy, Abdul Basit, Al-Minshawi, Al-Husary, Saad Al-Ghamdi, Yasser Al-Dosari, Saud Al-Shuraim, As-Sudais, Hani Ar-Rifai, Maher Al-Muaiqly, Abdullah Basfar, plus more
+- **AllahsWord (English) PREMIUM** — Quran with English translation audio; flagged `isPremium: true`
+- **Premium code gating** — `isPremiumUnlockedProvider` backed by SharedPreferences; PlayerScreen checks `isPremiumReciter && !isUnlocked` before playback
+- **Reciter-aware URLs** — `allahsword_english` uses `getAllahsWordSlug()` URL scheme; other reciters use `{surahNumber.padLeft(3, "0")}.mp3`
+- **Reciter-scoped downloads** — filenames: `{reciterId}_{surahNumber}.mp3` to avoid conflicts
+- **Selection persistence** — `selectedReciterIdProvider` stores in SharedPreferences
 
-## Next Steps for Implementation
+### 9. Downloads Feature (`lib/src/features/downloads/`)
+**Purpose**: Dedicated tab for managing downloaded surahs with offline playback
 
-1. **Dependency Injection**: Configure providers in `app.dart`
-2. **Audio Timing**: Integrate actual audio timing data
-3. **Search**: Implement full-text search across all verses
-4. **Downloads**: Complete download management UI
-5. **Arabic Font**: Add Amiri or similar font
-6. **Testing**: Add unit and widget tests
-7. **Error Handling**: Add comprehensive error boundaries
-8. **Offline Mode**: Implement offline Quran data
-9. **Player Integration**: Connect player to verses
-10. **Bookmarks UI**: Add bookmark creation from read screen
+#### Components:
+- `screens/downloads_screen.dart`: Full-screen downloads list grouped by reciter
+- `widgets/large_download_dialog.dart`: >40MB confirmation dialog
+
+#### Features:
+- **Downloads list** — All downloaded files listed with play/delete actions
+- **Progress bars** — In-flight download progress shown in UI
+- **Group by reciter** — Downloads grouped and labeled by reciter ID
+- **Group empty states** — Gold-themed empty state with download icon and helper text
+- **Auto-download** — Played surahs automatically cached (fire-and-forget in `loadSurah()`)
+- **Large file guard** — `largeDownloadThresholdBytes = 40 * 1024 * 1024`; prompts user before downloading >40MB over mobile data
+
+### 10. Library Feature (`lib/src/features/library/`)
+**Purpose**: Central hub for bookmarks, downloads, recents, and storage
+
+#### Components:
+- `screens/library_screen.dart`: Library with Downloads, Bookmarks, Recents, Storage sections
+- `providers/library_providers.dart`: Downloads, bookmarks, recents, storage providers
+
+#### Features:
+- **Downloads section** — View all downloaded surahs with play button
+- **Bookmarks section** — Saved verses grouped by surah; tap navigates to exact verse
+- **Recents section** — Last 50 played surahs via SharedPreferences; most-recent-first
+- **Storage card** — Real disk usage computed from download file sizes
+- `_onPlay` wired to `currentSurahProvider.loadSurah()`
+
+### 11. Settings Feature (`lib/src/features/settings/`)
+**Purpose**: User profile and app preferences
+
+#### Components:
+- `screens/settings_screen.dart`: Profile form with Save button
+- `providers/` — Settings state managed via `SettingsModel extends ChangeNotifier`
+
+#### Features:
+- **Profile section** — Display name and email with **Save button**
+- **Reciter preference** — Dropdown populated from `reciterOptions` (12 Arabic reciters + AllahsWord), syncs with `selectedReciterIdProvider`
+- **Audio quality** — Dropdown placeholder for future implementation (Auto, Low, Medium, High)
+- **Auto-play next toggle** — Persisted switch for auto-advancing surahs
+- **Playback speed** — Slider (0.5x–2.0x) persisted to SharedPreferences
+- **Theme** — Dignity black/gold (fixed, non-configurable)
+
+---
+
+## Planned Features (Future)
+
+| Task | Effort | Status |
+|------|--------|--------|
+| T8: Lottie Animation Overhaul | L | 🔜 Planned |
+| Info lint cleanup (~28 suggestions) | S | 🔜 Future |
+| Real reciter audio URLs for all 12 reciters | M | 🔜 Future |

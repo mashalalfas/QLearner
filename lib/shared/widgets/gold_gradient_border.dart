@@ -12,7 +12,7 @@ import 'package:qlearner/core/theme/app_colors.dart';
 ///   child: CustomPaint(
 ///     painter: GoldGradientBorder(
 ///       radius: radius,
-///       strokeWidth: 0.5,
+///       strokeWidth: 1.0,
 ///     ),
 ///     child: child,
 ///   ),
@@ -24,7 +24,7 @@ class GoldGradientBorder extends CustomPainter {
 
   const GoldGradientBorder({
     this.radius = 18,
-    this.strokeWidth = 0.5,
+    this.strokeWidth = 1.0,
   });
 
   @override
@@ -63,7 +63,7 @@ class GoldBordered extends StatelessWidget {
     super.key,
     required this.child,
     this.radius = 18,
-    this.strokeWidth = 0.5,
+    this.strokeWidth = 1.0,
   });
 
   @override

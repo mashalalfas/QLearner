@@ -67,63 +67,63 @@ const TextStyle playerSurahNumber = TextStyle(
 
 const TextStyle playerArabic = TextStyle(
   fontFamily: fontArabic,
-  fontSize: 28,
-  fontWeight: FontWeight.w600,
+  fontSize: 24,
+  fontWeight: FontWeight.w500,
   height: 1.4,
   color: AppColors.textWhite,
 );
 
 const TextStyle playerEnglish = TextStyle(
-  fontSize: 16,
-  fontWeight: FontWeight.w500,
+  fontSize: 18,
+  fontWeight: FontWeight.w600,
   color: AppColors.textWhite,
   fontFamily: fontBody,
 );
 
 const TextStyle searchInput = TextStyle(
-  fontSize: 15,
-  fontWeight: FontWeight.w500,
+  fontSize: 14,
+  fontWeight: FontWeight.w400,
   color: AppColors.textWhite,
   fontFamily: fontBody,
 );
 
 const TextStyle searchPlaceholder = TextStyle(
-  fontSize: 15,
-  fontWeight: FontWeight.w500,
+  fontSize: 14,
+  fontWeight: FontWeight.w400,
   color: AppColors.textGray,
   fontFamily: fontBody,
 );
 
 const TextStyle libraryItemTitle = TextStyle(
-  fontSize: 15,
+  fontSize: 14,
   fontWeight: FontWeight.w600,
   color: AppColors.textWhite,
   fontFamily: fontBody,
 );
 
 const TextStyle libraryItemMeta = TextStyle(
-  fontSize: 12,
-  fontWeight: FontWeight.w500,
+  fontSize: 11,
+  fontWeight: FontWeight.w400,
   color: AppColors.textGray,
   fontFamily: fontBody,
 );
 
 const TextStyle reciterName = TextStyle(
-  fontSize: 15,
+  fontSize: 16,
   fontWeight: FontWeight.w600,
   color: AppColors.textWhite,
   fontFamily: fontBody,
 );
 
 const TextStyle reciterStyle = TextStyle(
-  fontSize: 12,
-  fontWeight: FontWeight.w500,
+  fontSize: 13,
+  fontWeight: FontWeight.w400,
   color: AppColors.goldMuted,
   fontFamily: fontBody,
 );
 
 const TextStyle reciterButton = TextStyle(
-  fontSize: 12,
+  fontSize: 13,
   fontWeight: FontWeight.w600,
   letterSpacing: 0.3,
   color: AppColors.goldStart,
