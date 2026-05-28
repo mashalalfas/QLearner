@@ -50,7 +50,7 @@ class AudioPlayerServiceImpl extends AudioPlayerService {
     _sharedHandler = asvc.AudioService.init(
       builder: () => _AudioHandlerImpl(),
       config: asvc.AudioServiceConfig(
-        androidNotificationChannelId: 'qlearner.channel',
+        androidNotificationChannelId: 'quranaudio.channel',
         androidNotificationChannelName: 'Quran Playback',
         androidNotificationOngoing: false,
         androidStopForegroundOnPause: true,

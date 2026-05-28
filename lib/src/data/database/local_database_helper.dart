@@ -22,7 +22,7 @@ class LocalDatabaseHelper {
 
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'qlearner.db');
+    final path = join(dbPath, 'quranaudio.db');
 
     return await openDatabase(
       path,

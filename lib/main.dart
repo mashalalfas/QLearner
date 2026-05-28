@@ -37,7 +37,7 @@ void main() {
           return CurrentSurahNotifier(repo, audioPlayer);
         }),
       ],
-      child: const QLearnerApp(),
+      child: const QuranAudioApp(),
     ),
   );
 }

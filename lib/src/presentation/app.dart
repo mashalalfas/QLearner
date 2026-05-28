@@ -6,14 +6,14 @@ import '../features/library/library.dart';
 import '../features/reciters/reciters.dart';
 import '../features/settings/settings.dart';
 
-/// Main QLearner app widget
-class QLearnerApp extends ConsumerWidget {
-  const QLearnerApp({super.key});
+/// Main QuranAudio app widget
+class QuranAudioApp extends ConsumerWidget {
+  const QuranAudioApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'QLearner',
+      title: 'QuranAudio',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
       home: const MainNavigation(),

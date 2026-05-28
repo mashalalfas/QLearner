@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:qlearner/core/theme/app_colors.dart';
-import 'package:qlearner/core/theme/app_typography.dart';
+import 'package:quranaudio/core/theme/app_colors.dart';
+import 'package:quranaudio/core/theme/app_typography.dart';
 
 /// A gold text section title with an underline decoration.
 ///

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qlearner/core/theme/app_colors.dart';
+import 'package:quranaudio/core/theme/app_colors.dart';
 
 /// A CustomPainter that paints a gold gradient border with configurable radius.
 ///

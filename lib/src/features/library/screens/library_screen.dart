@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:qlearner/core/theme/app_colors.dart';
-import 'package:qlearner/core/theme/app_typography.dart';
-import 'package:qlearner/core/theme/app_spacing.dart';
-import 'package:qlearner/shared/widgets/glass_card.dart';
-import 'package:qlearner/shared/widgets/section_header.dart';
+import 'package:quranaudio/core/theme/app_colors.dart';
+import 'package:quranaudio/core/theme/app_typography.dart';
+import 'package:quranaudio/core/theme/app_spacing.dart';
+import 'package:quranaudio/shared/widgets/glass_card.dart';
+import 'package:quranaudio/shared/widgets/section_header.dart';
 import '../providers/library_providers.dart';
-import 'package:qlearner/src/core/providers/service_providers.dart';
-import 'package:qlearner/src/data/models/bookmark.dart';
-import 'package:qlearner/src/data/models/surah.dart';
-import 'package:qlearner/src/features/home/providers/home_providers.dart';
+import 'package:quranaudio/src/core/providers/service_providers.dart';
+import 'package:quranaudio/src/data/models/bookmark.dart';
+import 'package:quranaudio/src/data/models/surah.dart';
+import 'package:quranaudio/src/features/home/providers/home_providers.dart';
 
 /// Library screen — Dignity theme (black & gold glassmorphism)
 ///

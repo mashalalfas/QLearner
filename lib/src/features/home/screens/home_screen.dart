@@ -150,7 +150,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-/// Centered AppBar with "QLearner" and gold underline
+/// Centered AppBar with "QuranAudio" and gold underline
 class _AppBarGold extends StatelessWidget {
   const _AppBarGold();
 
@@ -160,7 +160,7 @@ class _AppBarGold extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'QLearner',
+            'QuranAudio',
             style: appbarTitle.copyWith(
               foreground: Paint()
                 ..shader = AppColors.goldGradient.createShader(

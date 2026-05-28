@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'glass_card.dart';
-import 'package:qlearner/core/theme/app_spacing.dart';
-import 'package:qlearner/core/theme/app_typography.dart';
+import 'package:quranaudio/core/theme/app_spacing.dart';
+import 'package:quranaudio/core/theme/app_typography.dart';
 
 /// A search bar with glassmorphism styling, gold border, and integrated TextField.
 ///

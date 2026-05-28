@@ -38,3 +38,6 @@ const double seekBarDotSize = 12;
 const double searchBarHeight = 48;
 const double searchBarRadius = 14;
 const double searchBarBlur = 2;
+
+/// Lottie player animation size
+const double lottiePlayerSize = 160.0;

@@ -5,7 +5,7 @@ class AppConstants {
   static const String everyayahBase = 'https://everyayah.com/data/';
 
   // Database
-  static const String databaseName = 'qlearner.db';
+  static const String databaseName = 'quranaudio.db';
   static const int databaseVersion = 1;
 
   // Audio

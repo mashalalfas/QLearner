@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qlearner/core/theme/app_colors.dart';
+import 'package:quranaudio/core/theme/app_colors.dart';
 
 /// A premium gold seek bar using SliderTheme for a polished look.
 ///

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Cotton Cloud Theme - QLearner App
+/// Cotton Cloud Theme - QuranAudio App
 /// Primary colors: Lavender header, Cream body, Purple accent
 class AppTheme {
   // Color palette

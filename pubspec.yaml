@@ -1,4 +1,4 @@
-name: qlearner
+name: quranaudio
 description: A Quran learning app with Clean Architecture and Riverpod
 publish_to: 'none'
 version: 1.0.0+1

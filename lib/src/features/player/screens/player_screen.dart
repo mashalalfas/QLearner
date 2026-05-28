@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:qlearner/core/theme/app_colors.dart';
-import 'package:qlearner/core/theme/app_typography.dart';
-import 'package:qlearner/core/theme/app_spacing.dart';
-import 'package:qlearner/shared/widgets/seek_bar_gold.dart';
-import 'package:qlearner/src/core/providers/service_providers.dart';
-import 'package:qlearner/src/features/library/providers/library_providers.dart';
-import 'package:qlearner/src/core/services/audio_player_service.dart';
-import 'package:qlearner/src/features/player/providers/player_providers.dart';
-import 'package:qlearner/src/features/player/providers/current_surah_provider.dart';
-import 'package:qlearner/src/data/models/bookmark.dart';
-import 'package:qlearner/src/data/models/surah.dart';
-import 'package:qlearner/src/features/player/widgets/player_lottie.dart';
+import 'package:quranaudio/core/theme/app_colors.dart';
+import 'package:quranaudio/core/theme/app_typography.dart';
+import 'package:quranaudio/core/theme/app_spacing.dart';
+import 'package:quranaudio/shared/widgets/seek_bar_gold.dart';
+import 'package:quranaudio/src/core/providers/service_providers.dart';
+import 'package:quranaudio/src/features/library/providers/library_providers.dart';
+import 'package:quranaudio/src/core/services/audio_player_service.dart';
+import 'package:quranaudio/src/features/player/providers/player_providers.dart';
+import 'package:quranaudio/src/features/player/providers/current_surah_provider.dart';
+import 'package:quranaudio/src/data/models/bookmark.dart';
+import 'package:quranaudio/src/data/models/surah.dart';
+import 'package:quranaudio/src/features/player/widgets/player_lottie.dart';
 
 /// Player screen — Dignity theme: premium black & gold with animated circle
 ///

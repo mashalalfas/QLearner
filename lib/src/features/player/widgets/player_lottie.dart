@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:qlearner/core/theme/app_spacing.dart';
-import 'package:qlearner/src/core/services/audio_player_service.dart';
+import 'package:quranaudio/core/theme/app_spacing.dart';
+import 'package:quranaudio/src/core/services/audio_player_service.dart';
 
 /// PlayerLottie — renders a Lottie animation mapped to [PlayerStateEnum].
 ///

@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:qlearner/core/theme/app_colors.dart';
-import 'package:qlearner/core/theme/app_spacing.dart';
-import 'package:qlearner/core/theme/app_typography.dart';
+import 'package:quranaudio/core/theme/app_colors.dart';
+import 'package:quranaudio/core/theme/app_spacing.dart';
+import 'package:quranaudio/core/theme/app_typography.dart';
 
 /// A 4-tab bottom navigation bar with gold underline indicator for active tab.
 ///

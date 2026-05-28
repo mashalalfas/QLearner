@@ -1,10 +1,10 @@
 {
   "roots": [
-    "qlearner"
+    "quranaudio"
   ],
   "packages": [
     {
-      "name": "qlearner",
+      "name": "quranaudio",
       "version": "1.0.0+1",
       "dependencies": [
         "audio_service",

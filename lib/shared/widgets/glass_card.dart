@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'gold_gradient_border.dart';
-import 'package:qlearner/core/theme/app_colors.dart';
-import 'package:qlearner/core/theme/app_spacing.dart';
+import 'package:quranaudio/core/theme/app_colors.dart';
+import 'package:quranaudio/core/theme/app_spacing.dart';
 
 /// A glassmorphism card with dark gradient background, gold border,
 /// and backdrop blur effect.
