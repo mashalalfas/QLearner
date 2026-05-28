@@ -35,3 +35,9 @@ const double playerCircleInnerSize = 180;
 /// Seek Bar
 const double seekBarHeight = 4;
 const double seekBarDotSize = 12;
+
+/// Lottie Player Animations
+const double lottiePlayerSize = 160;
+const double lottiePlayerSmallSize = 48;
+const double lottiePlayerStrokeWidth = 4;
+const double lottiePulseIntensity = 1.3;

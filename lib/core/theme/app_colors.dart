@@ -49,6 +49,16 @@ class AppColors {
     end: Alignment.bottomCenter,
   );
 
+  // ----------------------------------------------------------------------
+  // Lottie animation fill
+  // ----------------------------------------------------------------------
+  static const Color lottieFill = Color(0x00C9A84C); // Transparent gold — inherits stroke
+  static const Color lottieGold = Color(0xFFC9A84C); // Primary gold stroke
+  static const Color lottieOpacityHigh = Color(0x80C9A84C); // 50% gold for subtle elements
+  static const Color lottieOpacityLow = Color(0x33C9A84C); // 20% gold for faint accents
+  static const Color lottieComplete = Color(0xFF4CAF50); // Subtle green for completion accent
+  static const Color lottieCompletionGold = Color(0xFFE8D48B); // Light gold for completed glow
+
   // Private constructor — no instances
   AppColors._();
 }
