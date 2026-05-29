@@ -266,7 +266,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 children: [
                   _InfoRow(
                     label: 'App Version',
-                    value: 'QuranAudio v0.2',
+                    value: 'QuranAudio v1.0.0',
                   ),
                   SizedBox(height: 12),
                   _InfoRow(
